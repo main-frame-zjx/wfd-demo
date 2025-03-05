@@ -133,27 +133,9 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
     }
     this.initEvents();
 
-    // add
-    this.readFileFromPath('C:\Users\giraffezjx\Desktop\wfd-demo\test_data\test_block_interface.cpp'); // 替换为实际文件路径
   }
 
 
-  // add
-  readFileFromPath(filePath: string) {
-    fetch(filePath)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('read file error');
-        }
-        return response.text();
-      })
-      .then((content) => {
-        console.log('content:', content); // 输出文件内容到控制台
-      })
-      .catch((error) => {
-        console.error('read file error:', error);
-      });
-  }
 
   initShape(data) {
     if (data && data.nodes) {

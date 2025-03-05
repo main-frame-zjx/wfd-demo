@@ -3,6 +3,8 @@ import styles from "./index.less";
 import { Collapse } from "antd";
 import 'antd/lib/collapse/style';
 import LangContext from "../../util/context";
+import CodeAnalyseTool from "../../util/codeAnalyse";
+import DumpAnalyseTool from "../../util/dumpAnalyse";
 const { Panel } = Collapse;
 
 
@@ -20,7 +22,21 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
      const { i18n } = useContext(LangContext);
 
 
-     const handleFolderChange = (event) => {
+     const handleCodeUpload = (event) => {
+          const files = event.target.files; // 获取文件夹中的所有文件
+          if (files) {
+               for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    console.log('文件名:', file.name);
+                    console.log('文件路径:', file.webkitRelativePath); // 文件的相对路径
+                    console.log('文件大小:', file.size);
+                    console.log('文件类型:', file.type);
+               }
+          }
+     };
+
+
+     const handleDumpUpload = (event) => {
           const files = event.target.files; // 获取文件夹中的所有文件
           if (files) {
                for (let i = 0; i < files.length; i++) {
@@ -75,7 +91,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                                    id="file-upload"
                                    type="file"
                                    webkitdirectory="true"
-                                   onChange={handleFolderChange}
+                                   onChange={handleCodeUpload}
                                    style={{ display: 'none' }} // 隐藏 input
                               />
 
@@ -98,7 +114,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                                    id="file-upload"
                                    type="file"
                                    webkitdirectory="true"
-                                   onChange={handleFolderChange}
+                                   onChange={handleDumpUpload}
                                    style={{ display: 'none' }} // 隐藏 input
                               />
                          </div>
