@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { createBrowserHistory, History } from 'C:/Users/giraffezjx/Desktop/wfd/node_modules/@umijs/runtime';
+import { createBrowserHistory, History } from 'C:/Users/giraffezjx/Desktop/wfd-demo/node_modules/@umijs/runtime';
 
 let options = {
   "basename": "/wfd"

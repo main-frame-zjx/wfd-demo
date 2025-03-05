@@ -3,14 +3,25 @@
     "allowSyntheticDefaultImports": true,
     "module": "esnext",
     "target": "esnext",
-    "lib": ["dom", "esnext"],
+    "lib": [
+      "dom",
+      "esnext"
+    ],
     "moduleResolution": "node",
     "jsx": "react",
     "esModuleInterop": true,
     "declaration": false,
     "removeComments": true,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "sourceMap": true
   },
-  "include": ["src", "typings"],
-  "exclude": ["node_modules", "lib", "es"]
+  "include": [
+    "src",
+    "typings"
+  ],
+  "exclude": [
+    "node_modules",
+    "lib",
+    "es"
+  ]
 }

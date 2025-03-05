@@ -7,8 +7,10 @@ import Command from './plugins/command'
 import Toolbar from './plugins/toolbar'
 import AddItemPanel from './plugins/addItemPanel'
 import CanvasPanel from './plugins/canvasPanel'
-import {exportXML} from "./util/bpmn";
+import { exportXML } from "./util/bpmn";
 import LangContext from "./util/context";
+import CodeAnalyseTool from "./util/codeAnalyse";
+import DumpAnalyseTool from "./util/dumpAnalyse";
 import DetailPanel from "./components/DetailPanel";
 import ItemPanel from "./components/ItemPanel";
 import ToolbarPanel from "./components/ToolbarPanel";
@@ -61,7 +63,7 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
     this.toolbarRef = React.createRef();
     this.itemPanelRef = React.createRef();
     this.detailPanelRef = React.createRef();
-    this.resizeFunc = () => {};
+    this.resizeFunc = () => { };
     this.state = {
       selectedModel: {},
       processModel: {
@@ -76,15 +78,15 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    if(prevProps.data !== this.props.data){
-      if(this.graph){
+    if (prevProps.data !== this.props.data) {
+      if (this.graph) {
         this.graph.changeData(this.initShape(this.props.data));
         this.graph.setMode(this.props.mode);
         // this.graph.emit('canvas:click');
-        if(this.cmdPlugin){
+        if (this.cmdPlugin) {
           this.cmdPlugin.initPlugin(this.graph);
         }
-        if(this.props.isView){
+        if (this.props.isView) {
           this.graph.fitView(5)
         }
       }
@@ -92,16 +94,16 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
   }
 
   componentDidMount() {
-    const { isView,mode } = this.props;
-    const height = this.props.height-1;
+    const { isView, mode } = this.props;
+    const height = this.props.height - 1;
     const width = this.pageRef.current.offsetWidth;
     let plugins = [];
-    if(!isView){
+    if (!isView) {
       this.cmdPlugin = new Command();
-      const toolbar = new Toolbar({container:this.toolbarRef.current});
-      const addItemPanel = new AddItemPanel({container:this.itemPanelRef.current});
-      const canvasPanel = new CanvasPanel({container:this.pageRef.current});
-      plugins = [ this.cmdPlugin,toolbar,addItemPanel,canvasPanel ];
+      const toolbar = new Toolbar({ container: this.toolbarRef.current });
+      const addItemPanel = new AddItemPanel({ container: this.itemPanelRef.current });
+      const canvasPanel = new CanvasPanel({ container: this.pageRef.current });
+      plugins = [this.cmdPlugin, toolbar, addItemPanel, canvasPanel];
     }
     this.graph = new G6.Graph({
       plugins: plugins,
@@ -110,30 +112,51 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
       width: width,
       modes: {
         default: ['drag-canvas', 'clickSelected'],
-        view: [ ],
-        edit: ['drag-canvas', 'hoverNodeActived','hoverAnchorActived','dragNode','dragEdge',
-          'dragPanelItemAddNode','clickSelected','deleteItem','itemAlign','dragPoint','brush-select'],
+        view: [],
+        edit: ['drag-canvas', 'hoverNodeActived', 'hoverAnchorActived', 'dragNode', 'dragEdge',
+          'dragPanelItemAddNode', 'clickSelected', 'deleteItem', 'itemAlign', 'dragPoint', 'brush-select'],
       },
       defaultEdge: {
         type: 'flow-polyline-round',
       },
     });
-    this.graph.saveXML = (createFile = true) => exportXML(this.graph.save(),this.state.processModel,createFile);
-    if(isView){
+    this.graph.saveXML = (createFile = true) => exportXML(this.graph.save(), this.state.processModel, createFile);
+    if (isView) {
       this.graph.setMode("view");
-    }else{
+    } else {
       this.graph.setMode(mode);
     }
-    this.graph.data(this.props.data ? this.initShape(this.props.data) : {nodes:[],edges:[]});
+    this.graph.data(this.props.data ? this.initShape(this.props.data) : { nodes: [], edges: [] });
     this.graph.render();
-    if(isView && this.props.data && this.props.data.nodes){
+    if (isView && this.props.data && this.props.data.nodes) {
       this.graph.fitView(5)
     }
     this.initEvents();
+
+    // add
+    this.readFileFromPath('C:\Users\giraffezjx\Desktop\wfd-demo\test_data\test_block_interface.cpp'); // 替换为实际文件路径
   }
 
-  initShape(data){
-    if(data && data.nodes){
+
+  // add
+  readFileFromPath(filePath: string) {
+    fetch(filePath)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('read file error');
+        }
+        return response.text();
+      })
+      .then((content) => {
+        console.log('content:', content); // 输出文件内容到控制台
+      })
+      .catch((error) => {
+        console.error('read file error:', error);
+      });
+  }
+
+  initShape(data) {
+    if (data && data.nodes) {
       return {
         nodes: data.nodes.map(node => {
           return {
@@ -147,60 +170,60 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
     return data;
   }
 
-  initEvents(){
-    this.graph.on('afteritemselected',(items)=>{
-      if(items && items.length > 0) {
+  initEvents() {
+    this.graph.on('afteritemselected', (items) => {
+      if (items && items.length > 0) {
         let item = this.graph.findById(items[0]);
-        if(!item){
+        if (!item) {
           item = this.getNodeInSubProcess(items[0])
         }
-        this.setState({selectedModel: {...item.getModel()}});
+        this.setState({ selectedModel: { ...item.getModel() } });
       } else {
-        this.setState({selectedModel: this.state.processModel});
+        this.setState({ selectedModel: this.state.processModel });
       }
     });
     const page = this.pageRef.current;
     const graph = this.graph;
-    const height = this.props.height-1;
-    this.resizeFunc = ()=>{
-      graph.changeSize(page.offsetWidth,height);
+    const height = this.props.height - 1;
+    this.resizeFunc = () => {
+      graph.changeSize(page.offsetWidth, height);
     };
     window.addEventListener("resize", this.resizeFunc);
   }
 
   componentWillUnmount() {
     window.removeEventListener("resize", this.resizeFunc);
-    if(this.graph) {
+    if (this.graph) {
       this.graph.getNodes().forEach(node => {
         node.getKeyShape().stopAnimate();
       });
     }
   }
 
-  onItemCfgChange(key,value){
+  onItemCfgChange(key, value) {
     const items = this.graph.get('selectedItems');
-    if(items && items.length > 0){
+    if (items && items.length > 0) {
       let item = this.graph.findById(items[0]);
-      if(!item){
+      if (!item) {
         item = this.getNodeInSubProcess(items[0])
       }
-      if(this.graph.executeCommand) {
+      if (this.graph.executeCommand) {
         this.graph.executeCommand('update', {
           itemId: items[0],
-          updateModel: {[key]: value}
+          updateModel: { [key]: value }
         });
-      }else {
-        this.graph.updateItem(item, {[key]: value});
+      } else {
+        this.graph.updateItem(item, { [key]: value });
       }
-      this.setState({selectedModel: {  ...item.getModel() }});
+      this.setState({ selectedModel: { ...item.getModel() } });
     } else {
-      const canvasModel = { ...this.state.processModel, [key]: value};
-      this.setState({selectedModel: canvasModel});
-      this.setState({processModel: canvasModel });
+      const canvasModel = { ...this.state.processModel, [key]: value };
+      this.setState({ selectedModel: canvasModel });
+      this.setState({ processModel: canvasModel });
     }
   }
 
-  getNodeInSubProcess(itemId){
+  getNodeInSubProcess(itemId) {
     const subProcess = this.graph.find('node', (node) => {
       if (node.get('model')) {
         const clazz = node.get('model').clazz;
@@ -216,7 +239,7 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
         return false;
       }
     });
-    if(subProcess) {
+    if (subProcess) {
       const group = subProcess.getContainer();
       return group.getItem(subProcess, itemId);
     }
@@ -225,27 +248,27 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
 
   render() {
     const height = this.props.height;
-    const { isView,mode,users,groups,lang } = this.props;
-    const { selectedModel,processModel } = this.state;
+    const { isView, mode, users, groups, lang } = this.props;
+    const { selectedModel, processModel } = this.state;
     const { signalDefs, messageDefs } = processModel;
     const i18n = locale[lang.toLowerCase()];
     const readOnly = mode !== "edit";
     return (
-      <LangContext.Provider value={{i18n,lang}}>
+      <LangContext.Provider value={{ i18n, lang }}>
         <div className={styles.root}>
-          { !isView && <ToolbarPanel ref={this.toolbarRef} /> }
+          {!isView && <ToolbarPanel ref={this.toolbarRef} />}
           <div>
-            { !isView && <ItemPanel ref={this.itemPanelRef} height={height}/> }
-            <div ref={this.pageRef} className={styles.canvasPanel} style={{height,width:isView?'100%':'70%',borderBottom:isView?0:null}}/>
-            { !isView && <DetailPanel ref={this.detailPanelRef}
-                                      height={height}
-                                      model={selectedModel}
-                                      readOnly={readOnly}
-                                      users={users}
-                                      groups={groups}
-                                      signalDefs={signalDefs}
-                                      messageDefs={messageDefs}
-                                      onChange={(key,val)=>{this.onItemCfgChange(key,val)}} />
+            {!isView && <ItemPanel ref={this.itemPanelRef} height={height} />}
+            <div ref={this.pageRef} className={styles.canvasPanel} style={{ height, width: isView ? '100%' : '70%', borderBottom: isView ? 0 : null }} />
+            {!isView && <DetailPanel ref={this.detailPanelRef}
+              height={height}
+              model={selectedModel}
+              readOnly={readOnly}
+              users={users}
+              groups={groups}
+              signalDefs={signalDefs}
+              messageDefs={messageDefs}
+              onChange={(key, val) => { this.onItemCfgChange(key, val) }} />
             }
           </div>
         </div>

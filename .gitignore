@@ -4,3 +4,4 @@
 /.docz
 /node_modules
 .idea
+/example/.umi/.cache

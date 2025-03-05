@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React from 'react';
-import { ApplyPluginsType } from 'C:/Users/giraffezjx/Desktop/wfd/node_modules/@umijs/runtime';
+import { ApplyPluginsType } from 'C:/Users/giraffezjx/Desktop/wfd-demo/node_modules/@umijs/runtime';
 import * as umiExports from './umiExports';
 import { plugin } from './plugin';
 
