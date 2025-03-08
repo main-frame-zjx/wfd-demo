@@ -1,91 +1,96 @@
 // dumpAnalyse.js
+const fs = require('fs');
+const path = require('path');
+
 class DumpFile {
-    constructor(fileName) {
-        this.fileName = fileName;
-        this.keys = [];
-        this.values = [];
-    }
-
-    setKey(key) {
-        this.keys.push(key.trim());
-    }
-
-    setValue(value) {
-        this.values.push(value);
+    constructor(name) {
+        this.filename = name;
+        this.keyList = [];
+        this.valueList = [];
+        this.N;
     }
 
     setN(n) {
-        this.n = n;
+        this.N = n;
+    }
+
+    setKey(k) {
+        this.keyList.push(k);
+    }
+
+    setValue(v) {
+        // v 是行数组，valueList 是 [[], [], ...]
+        this.valueList.push(v);
+    }
+
+    printValue(k) {
+        let n = 0;
+        for (let key of this.keyList) {
+            n++;
+            if (k === key) {
+                break;
+            }
+        }
+        n--;
+        for (let l of this.valueList) {
+            console.log(l[n]);
+        }
     }
 }
 
 const DumpAnalyseTool = {
-
+    
     //调用示例
-    // const baseDir = '/wfd-demo/test_data/dump_data/';
     // const resultFilePath = 'result.txt';
-    // const dFiles = integrate(baseDir, resultFilePath);
-    integrate(baseDir, resultFilePath) {
-        const resultFile = fs.createWriteStream(resultFilePath, { encoding: 'utf-8' });
-        const files = fs.readdirSync(baseDir).map(file => path.join(baseDir, file));
-        const dFiles = [];
-    
-        files.forEach(file => {
-            if (fs.statSync(file).isFile()) {
-                const fileName = path.basename(file);
-                console.log(fileName);
-    
-                if (fileName.startsWith('integrate')) {
-                    return; // Skip files starting with 'integrate'
+    // const dFiles = integrate(files);
+    integrate(dFiles,fnames) {
+        console.log('处理',fnames);
+        let resultFile = []
+        for(let i = 0; i < dFiles.length; i++) {
+            const fileContent = dFiles[i];
+            const df = new DumpFile(fnames[i]);
+            let flag = 0;
+            let num = 0;
+            let className = '';
+            fileContent.forEach(line => {
+                if (line.startsWith('class')) {
+                    const listLine = line.split(/\s+/);
+                    className = listLine[1];
                 }
-    
-                const df = new DumpFile(fileName);
-                const fileContent = fs.readFileSync(file, 'utf-8').split('\n');
-                let flag = 0;
-                let num = 0;
-                let className = '';
-                fileContent.forEach(line => {
-                    if (line.startsWith('class')) {
-                        const listLine = line.split(/\s+/);
-                        className = listLine[1];
-                    }
-    
-                    if (flag === 1 && line.trim() !== '') {
-                        const listLine = line.split(/\s+/);
-                        df.setValue(listLine);
-                        resultFile.write(listLine[num]);
-                        df.setN(num + 1);
-                        resultFile.write(` className: ${className} fileName: ${fileName}\n`);
-                    }
-    
-                    if (line.startsWith('endclass')) {
-                        flag = 1;
-                    }
 
-                    if (flag === 0) {
-                        num += 1;
-                        if (!line.startsWith('class') && !line.startsWith('endclass')) {
-                            df.setKey(line);
-                        }
+                if (flag === 1 && line.trim() !== '') {
+                    const listLine = line.split(/\s+/);
+                    df.setValue(listLine);
+                    resultFile.push(listLine[num]);
+                    df.setN(num + 1);
+                    resultFile.push(` fileName: ${fileName}`);
+                }
+        
+                if (line.startsWith('endclass')) {
+                    flag = 1;
+                }
+
+                if (flag === 0) {
+                    num += 1;
+                    if (!line.startsWith('class') && !line.startsWith('endclass')) {
+                        df.setKey(line);
                     }
-                });
-    
-                dFiles.push(df);
-            }
-        });
-    
-        resultFile.end();
-        return dFiles;
+                }
+            });
+        }
+
+        // dFiles.push(df);
+        return resultFile;
     },
 
-    // 使用示例
-    // const inputFilePath = 'result.txt';
-    // const outputFilePath = 'result2.txt';
-    // sort(inputFilePath, outputFilePath);
-    sort(inputFilePath, outputFilePath) {
+    
+    sort(rf) {
         // 读取输入文件
-        const fileContent = fs.readFileSync(inputFilePath, 'utf-8');
-        const lines = fileContent.split('\n');
+        const fileContent = rf;
+        const lines = [];
+        for (let i = 0; i < fileContent.length; i++) {
+            lines.push(fileContent[i]);
+        }
     
         // 过滤空行和非空行
         const strList = lines.filter(line => line.trim() !== '');
@@ -94,20 +99,18 @@ const DumpAnalyseTool = {
         strList.sort();
     
         // 将排序后的内容写入输出文件
-        const resultFile = fs.createWriteStream(outputFilePath, { encoding: 'utf-8' });
-        strList.forEach(line => resultFile.write(`${line}\n`));
+        const resultFile = [];
+        strList.forEach(line => resultFile.push(`${line}`));
         resultFile.end();
     
-        console.log(`处理完成，结果已写入文件: ${outputFilePath}`);
+        console.log(`处理完成，结果已写入文件`);
+        return 
     },
 
-    // 使用示例
-    // const inputFilePath = 'result2.txt';
-    // const outputFilePath = 'result3.txt';
-    // calculate(inputFilePath, outputFilePath);
-    calculate(inputFilePath, outputFilePath) {
+    
+    calculate() {
         // 读取输入文件
-        const fileContent = fs.readFileSync(inputFilePath, 'utf-8');
+        const fileContent = fs.readFileSync('/wfd-demo/test_data/dump_data/result2.txt', 'utf-8');
         const lines = fileContent.split('\n');
     
         // 初始化字典
@@ -128,7 +131,7 @@ const DumpAnalyseTool = {
             }
         });
         // 打开输出文件
-        const resultFile = fs.createWriteStream(outputFilePath, { encoding: 'utf-8' });
+        const resultFile = fs.createWriteStream('/wfd-demo/test_data/dump_data/result3.txt', { encoding: 'utf-8' });
 
         // 计算频率并写入结果
         dic.forEach((values, key) => {
@@ -145,7 +148,7 @@ const DumpAnalyseTool = {
         });
 
         resultFile.end();
-        console.log(`处理完成，结果已写入文件: ${outputFilePath}`);
+        console.log(`处理完成，结果已写入文件`);
     }
 };
 

@@ -1,7 +1,26 @@
 import os
-base_dir="/wfd-demo/test_data/dump_data/"
+base_dir="wfd-demo/test_data/dump_data/"
 resultFile = open('result.txt', mode='w', encoding='utf-8')
-class DumpFile: ...
+class DumpFile:
+    def __init__(self, name):
+        self.filename=name 
+        self.keyList=[]
+        self.valueList=[]
+    def setN(self,n):
+        self.N=n
+    def setKey(self,k):
+        self.keyList.append(k)
+    def setValue(self,v): #v is List of Lines, valueList is [[],[],...]
+        self.valueList.append(v)
+    def printValue(self,k): #print values of certain key
+        n=0
+        for key in self.keyList:
+            n+=1
+            if k==key: 
+                break
+            n-=1
+            for l in self.valueList:
+                print(l[n])
 files = [os.path.join(base_dir, file) for file in os.listdir(base_dir)] #files are all files under folder:base_dir
 dFiles = []
 for file in files:
