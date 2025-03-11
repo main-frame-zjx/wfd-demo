@@ -34,6 +34,9 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                     console.log('文件类型:', file.type);
                }
           }
+
+          CodeAnalyseTool.analyseCodeFiles(files);
+          console.log(CodeAnalyseTool.getCodeInfo());
      };
 
 
@@ -47,20 +50,20 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                     console.log('文件大小:', file.size);
                     console.log('文件类型:', file.type);
                }
-               
+
                let result = [];
                let completedFiles = 0;
                let filesToProcess = 0;
                for (let i = 0; i < files.length; i++) {
                     const fileName = files[i].name;
                     if (fileName.endsWith('model_vec')) {
-                        filesToProcess++;
+                         filesToProcess++;
                     }
                }
                for (let i = 0; i < files.length; i++) {
                     const file = files[i];
                     const fileName = file.name;
-                    if(fileName.endsWith('model_vec')){
+                    if (fileName.endsWith('model_vec')) {
                          const reader = new FileReader();
                          reader.onload = function (e) {
                               const fileContent = e.target.result as string;
@@ -83,7 +86,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                                    if (flag === 0) {
                                         num += 1;
                                    }
-                                   if (resultLine.length !== 0){
+                                   if (resultLine.length !== 0) {
                                         result.push(resultLine);
                                    }
                                    // console.log('result:', result);
@@ -105,7 +108,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                                         // console.log('cycle:', cycle);
                                         const value = lineList[1]; // 提取 value
                                         if (!dic.hasOwnProperty(cycle)) {
-                                             dic[cycle]=[value]; // 如果 cycle 不存在，初始化一个数组
+                                             dic[cycle] = [value]; // 如果 cycle 不存在，初始化一个数组
                                         } else {
                                              dic[cycle].push(value); // 如果 cycle 存在，将 value 添加到数组中
                                         }
