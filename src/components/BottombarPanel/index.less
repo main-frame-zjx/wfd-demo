@@ -1,0 +1,51 @@
+.bottombar {
+  display: flex; /* 使用 Flexbox 布局 */
+  align-items: center; /* 垂直居中对齐 */
+  justify-content: space-between; /* 子元素之间的间距均匀分布 */
+  width: 100%; /* 容器宽度 */
+}
+
+.outerContainer {
+  display: flex;
+  justify-content: space-between;
+}
+ 
+.progressContainer {
+  width: 100%;
+  // flex: 1; /* 进度条容器占据剩余空间 */
+  height: 8px;
+  background-color: #E9E9E9;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  margin: auto; /* 水平居中 */
+  cursor: pointer;
+}
+ 
+ 
+.progressBar {
+  height: 100%;
+  background-color: #63a3fc;
+  transition: width 0.03s ease;
+  border-radius: 10px;
+}
+ 
+.progressTextCenter {
+  // position: absolute;
+  // top: 50%;
+  // left: 50%;
+  // transform: translate(-50%, -50%);
+  margin: 0 10px; /* 文本左右间距 */
+  color: #000;
+  font-size: 12px;
+}
+ 
+.progressTextLeft, .progressTextRight {
+  font-size: 12px; /* 文本字体大小 */
+  margin: 0 10px; /* 文本左右间距 */
+}
+// .progressTextRight {
+//   margin-left: 10px;
+//   margin-top: -3px;
+//   font-size: 12px;
+// }

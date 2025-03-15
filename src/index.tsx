@@ -5,6 +5,7 @@ import { getShapeName } from './util/clazz'
 import locale from './locales/index';
 import Command from './plugins/command'
 import Toolbar from './plugins/toolbar'
+import Bottombar from './plugins/bottombar'
 import AddItemPanel from './plugins/addItemPanel'
 import CanvasPanel from './plugins/canvasPanel'
 import { exportXML } from "./util/bpmn";
@@ -14,6 +15,7 @@ import DumpAnalyseTool from "./util/dumpAnalyse";
 import DetailPanel from "./components/DetailPanel";
 import ItemPanel from "./components/ItemPanel";
 import ToolbarPanel from "./components/ToolbarPanel";
+import BottombarPanel from "./components/BottombarPanel";
 import registerShape from './shape'
 import registerBehavior from './behavior'
 import { IDefaultModel, IProcessModel, ISelectData } from './types';
@@ -51,6 +53,7 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
   };
   private readonly pageRef: React.RefObject<any>;
   private readonly toolbarRef: React.RefObject<any>;
+  private readonly bottombarRef: React.RefObject<any>;
   private readonly itemPanelRef: React.RefObject<any>;
   private readonly detailPanelRef: React.RefObject<any>;
   private resizeFunc: (...args: any[]) => any;
@@ -61,6 +64,7 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
     super(cfg);
     this.pageRef = React.createRef();
     this.toolbarRef = React.createRef();
+    this.bottombarRef = React.createRef();
     this.itemPanelRef = React.createRef();
     this.detailPanelRef = React.createRef();
     this.resizeFunc = () => { };
@@ -101,9 +105,10 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
     if (!isView) {
       this.cmdPlugin = new Command();
       const toolbar = new Toolbar({ container: this.toolbarRef.current });
+      const bottombar = new Bottombar({ container: this.bottombarRef.current })
       const addItemPanel = new AddItemPanel({ container: this.itemPanelRef.current });
       const canvasPanel = new CanvasPanel({ container: this.pageRef.current });
-      plugins = [this.cmdPlugin, toolbar, addItemPanel, canvasPanel];
+      plugins = [this.cmdPlugin, toolbar, bottombar, addItemPanel, canvasPanel];
     }
     this.graph = new G6.Graph({
       plugins: plugins,
@@ -253,6 +258,7 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
               onChange={(key, val) => { this.onItemCfgChange(key, val) }} />
             }
           </div>
+          {!isView && <BottombarPanel ref={this.bottombarRef} />}
         </div>
       </LangContext.Provider>
     );
