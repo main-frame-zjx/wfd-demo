@@ -50,7 +50,12 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                     console.log('文件大小:', file.size);
                     console.log('文件类型:', file.type);
                }
-               console.log("final_result:",DumpAnalyseTool.analyseDumpFiles(files));
+               (async () => {
+                    await DumpAnalyseTool.analyseDumpFiles(files);
+                    console.log("final_result:", DumpAnalyseTool.getDumpInfo());
+                    alert("数据文件上传解析成功！");
+               })();
+
           }
      };
 
