@@ -1,5 +1,6 @@
 // codeAnalyse.js
-let codeInfo = null
+let codeInfo = null;
+let succInit = false;
 class CodeInfo {
     constructor() {
         this.moduleNum = 0;
@@ -146,6 +147,7 @@ const CodeAnalyseTool = {
                                 curLine++;
                             }
 
+                            succInit = true;
                         })
                         .catch((error) => {
                             console.error('Error reading file:', error);
@@ -181,7 +183,11 @@ const CodeAnalyseTool = {
 
     setCodeInfo(info) {
         codeInfo = info;
-    }
+    },
+
+    getSuccInit() {
+        return succInit;
+    },
 
 
 };

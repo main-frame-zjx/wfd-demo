@@ -1,6 +1,8 @@
 // dumpAnalyse.js
 let final_result = '';
 let filesToProcess = 0;
+let succInit = false;
+cycleDict = {};
 
 class DumpFile {
   constructor(name) {
@@ -145,6 +147,7 @@ const DumpAnalyseTool = {
     }
     console.log('result:', fresult);
     this.setDumpInfo(fresult);
+    succInit = true;
   },
 
   getDumpInfo() {
@@ -154,6 +157,18 @@ const DumpAnalyseTool = {
   setDumpInfo(result) {
     final_result = result;
   },
+
+  getSuccInit() {
+    return succInit;
+  },
+
+  initCycleDict() {
+
+  },
+
+  calcPortTransferRate() {
+
+  }
 };
 
 export default DumpAnalyseTool;

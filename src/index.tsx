@@ -59,6 +59,7 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
   private resizeFunc: (...args: any[]) => any;
   public graph: any;
   public cmdPlugin: any;
+  public bottombarVisable: any;
 
   constructor(cfg: DesignerProps) {
     super(cfg);
@@ -79,6 +80,16 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
         messageDefs: [],
       },
     };
+    this.bottombarVisable = false;
+  }
+
+  setbottombarVisable = (flag) => {
+    this.bottombarVisable = flag;
+  }
+
+  isBottombarVisable = () => {
+    if (DumpAnalyseTool && DumpAnalyseTool.getSuccInit()) return true;
+    return false;
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -131,12 +142,15 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
     } else {
       this.graph.setMode(mode);
     }
-    this.graph.data(this.props.data ? this.initShape(this.props.data) : { nodes: [], edges: [] });
+    this.graph.data({ nodes: [], edges: [] });
+    // this.graph.data(this.props.data ? this.initShape(this.props.data) : { nodes: [], edges: [] });
+    // console.log(this.props.data);
     this.graph.render();
     if (isView && this.props.data && this.props.data.nodes) {
       this.graph.fitView(5)
     }
     this.initEvents();
+    // window.parent.setbottombarVisable = this.setbottombarVisable;
 
   }
 
