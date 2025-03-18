@@ -34,9 +34,11 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                     console.log('文件类型:', file.type);
                }
           }
-
-          CodeAnalyseTool.analyseCodeFiles(files);
-          console.log(CodeAnalyseTool.getCodeInfo());
+          (async () => {
+               await CodeAnalyseTool.analyseCodeFiles(files);
+               console.log("code_info:", CodeAnalyseTool.getCodeInfo());
+               alert("代码文件上传解析成功！");
+          })();
      };
 
 
@@ -52,7 +54,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                }
                (async () => {
                     await DumpAnalyseTool.analyseDumpFiles(files);
-                    console.log("final_result:", DumpAnalyseTool.getDumpInfo());
+                    console.log("dump_info:", DumpAnalyseTool.getDumpInfo());
                     alert("数据文件上传解析成功！");
                })();
 
