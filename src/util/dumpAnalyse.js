@@ -2,7 +2,7 @@
 let final_result = '';
 let filesToProcess = 0;
 let succInit = false;
-cycleDict = {};
+let cycleDict = {};
 
 class DumpFile {
   constructor(name) {
