@@ -53,6 +53,15 @@ export interface DesignerStates {
   processModel: IProcessModel;
 }
 
+let bottombarVisible = false;
+  
+function setbottombarVisible(flag:boolean){
+  bottombarVisible = flag;
+}
+
+export{bottombarVisible,setbottombarVisible};
+
+
 export default class Designer extends React.Component<DesignerProps, DesignerStates> {
   static defaultProps = {
     height: 500,
@@ -68,7 +77,6 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
   private resizeFunc: (...args: any[]) => any;
   public graph: any;
   public cmdPlugin: any;
-  public bottombarVisable: any;
 
   constructor(cfg: DesignerProps) {
     super(cfg);
@@ -89,16 +97,6 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
         messageDefs: [],
       },
     };
-    this.bottombarVisable = false;
-  }
-
-  setbottombarVisable = (flag) => {
-    this.bottombarVisable = flag;
-  }
-
-  isBottombarVisable = () => {
-    if (DumpAnalyseTool && DumpAnalyseTool.getSuccInit()) return true;
-    return false;
   }
 
 
@@ -321,6 +319,8 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
     const { signalDefs, messageDefs } = processModel;
     const i18n = locale[lang.toLowerCase()];
     const readOnly = mode !== "edit";
+
+    
     return (
       <LangContext.Provider value={{ i18n, lang }}>
         <div className={styles.root}>

@@ -5,8 +5,8 @@ import 'antd/lib/collapse/style';
 import LangContext from "../../util/context";
 import CodeAnalyseTool from "../../util/codeAnalyse";
 import DumpAnalyseTool from "../../util/dumpAnalyse";
+import { setbottombarVisible } from '../../index';
 const { Panel } = Collapse;
-
 
 declare module 'react' {
      interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
@@ -18,6 +18,7 @@ declare module 'react' {
 export interface ItemPanelProps {
      height: number;
 }
+
 const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
      const { i18n } = useContext(LangContext);
 
@@ -66,8 +67,9 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                     await DumpAnalyseTool.analyseDumpFiles(files);
                     console.log("dump_info:", DumpAnalyseTool.getDumpInfo());
                     alert("数据文件上传解析成功！");
-                    // if (window.parent && window.parent.setbottombarVisable) {
-                    //      window.parent.setbottombarVisable(true);
+                    // if (window.parent && window.parent.setbottombarVisible) {
+                    setbottombarVisible(true);
+                    
                     // }
                })();
 
