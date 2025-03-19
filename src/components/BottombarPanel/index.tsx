@@ -7,6 +7,7 @@ import LangContext from "../../util/context";
 import DumpAnalyseTool from "../../util/dumpAnalyse";
 import { dumpCycle } from '../ItemPanel';
 
+
 interface IProgressBarProps {
   percent: 88; // 当前进度值
   maxPercent?: number; // 最大百分比（进度）
