@@ -22,6 +22,15 @@ import { IDefaultModel, IProcessModel, ISelectData } from './types';
 registerShape(G6);
 registerBehavior(G6);
 
+
+declare global {
+  interface Window {
+    GenerateGraph: () => void;
+    ExportGraphDataToJson: () => void;
+    ImportGraphDataFromJson: () => void;
+  }
+}
+
 export interface DesignerProps {
   /** 画布高度 */
   height?: number;
@@ -92,6 +101,56 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
     return false;
   }
 
+
+  ExportGraphDataToJson = () => {
+    if (this.graph) {
+      const totalData = {
+        graphData: this.graph.data,
+        codeInfo: CodeAnalyseTool.getCodeInfo(),
+      }; // 获取 graph 的数据
+      const jsonString = JSON.stringify(totalData, null, 2); // 转换为 JSON 字符串
+      const blob = new Blob([jsonString], { type: 'application/json' }); // 创建 Blob 对象
+      const url = URL.createObjectURL(blob); // 生成下载链接
+
+      // 创建隐藏的 <a> 标签并触发下载
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'graph-data.json'; // 下载文件名
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      // 释放 URL 对象
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  ImportGraphDataFromJson = () => {
+    // const file = CodeAnalyseTool.getTmpData();
+    // const reader = new FileReader();
+
+    // reader.onload = (e) => {
+    //   const content = e.target?.result as string; // 读取文件内容
+    //   try {
+    //     const totalData = JSON.parse(content); // 将 JSON 字符串解析为对象
+    //     if (this.graph) {
+    //       this.graph.data(totalData.graphData); // 更新 graph.data
+    //       CodeAnalyseTool.setCodeInfo(totalData.codeInfo);
+    //       CodeAnalyseTool.setSuccInit(true);
+    //       this.graph.render(); // 重新渲染
+    //       this.graph.fitView(); // 自适应视图
+    //       alert('文件上传并加载成功！');
+    //     }
+    //   } catch (error) {
+    //     console.error('文件解析失败:', error);
+    //     alert('文件解析失败，请检查文件格式！');
+    //   }
+    // };
+
+    // reader.readAsText(file); // 以文本形式读取文件
+  };
+
+
   componentDidUpdate(prevProps, prevState, snapshot) {
     if (prevProps.data !== this.props.data) {
       if (this.graph) {
@@ -106,6 +165,12 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
         }
       }
     }
+  }
+
+  GenerateGraph = () => {
+    let data = CodeAnalyseTool.getRenderData(0);
+    this.graph.data(data ? this.initShape(data) : { nodes: [], edges: [] });
+    this.graph.render();
   }
 
   componentDidMount() {
@@ -151,7 +216,9 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
     }
     this.initEvents();
     // window.parent.setbottombarVisable = this.setbottombarVisable;
-
+    window.GenerateGraph = this.GenerateGraph;
+    window.ExportGraphDataToJson = this.ExportGraphDataToJson;
+    window.ImportGraphDataFromJson = this.ImportGraphDataFromJson;
   }
 
 

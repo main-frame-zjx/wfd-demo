@@ -1,6 +1,7 @@
 // codeAnalyse.js
 let codeInfo = null;
 let succInit = false;
+let tmpData = null;
 class CodeInfo {
     constructor() {
         this.moduleNum = 0;
@@ -187,6 +188,142 @@ const CodeAnalyseTool = {
 
     getSuccInit() {
         return succInit;
+    },
+
+    setSuccInit(succ) {
+        succInit = succ;
+    },
+
+    getTmpData() {
+        return tmpData;
+    },
+
+    setTmpData(data) {
+        tmpData = data;
+    },
+
+    getRenderData(dpc_id) {
+        let nodes = [];
+        let edges = [];
+        if (dpc_id == -1) {
+
+        }
+        else if (dpc_id >= 0 && dpc_id < 4) {
+
+            const { drawModuleInstanceArray, drawPortInstanceArray, nodesId2Index } = this.selectModuleInstanceAndPortToDraw(dpc_id);
+
+            for (let i = 0; i < drawModuleInstanceArray.length; i++) {
+                let mi = drawModuleInstanceArray[i];
+                let mi_name = codeInfo.moduleArray[mi.mptr_id].module_type === "Single" ? mi.module_name : mi.module_name + '[' + mi.index.toString() + ']';
+                let node = {
+                    id: mi.mi_id.toString(),
+                    x: 100 + 50 * i,
+                    y: 100 + 50 * i,
+                    label: mi_name,
+                    clazz: 'scriptTask',
+                    //active: true
+                };
+                nodes.push(node);
+            }
+
+            for (let i = 0; i < drawPortInstanceArray.length; i++) {
+                let pi = drawPortInstanceArray[i];
+                let edge = {
+                    source: pi.transmit_index.toString(),
+                    target: pi.receive_index.toString(),
+                    sourceAnchor: 0,
+                    targetAnchor: 1,
+                    clazz: 'flow',
+                };
+                edges.push(edge);
+            }
+            this.setPositionAndAnchor(nodes, edges, nodesId2Index, 900, 500);
+            console.log('nodesId2Index', nodesId2Index);
+
+        }
+
+
+        console.log('nodes', nodes);
+        console.log('edges', edges);
+        return { nodes: nodes, edges: edges };
+    },
+
+
+    setPositionAndAnchor(nodes, edges, nodesId2Index, x_max, y_max) {
+
+        let num = nodes.length;
+        let x_posArray = [1, 1, 3, 7, 9, 5, 11, 7, 4, -1];
+        let y_posArray = [1, -1, 1, 0, 0, 1, 0, 1, -1, 0];
+        let x_posmax = 11 + 1;
+        let x_posmin = -1 - 1;
+        let y_posmax = 1 + 0.5;
+        let y_posmin = -1 - 0.5;
+        if (num > x_posArray.length) return;
+        for (let i = 0; i < num; i++) {
+            let x_ = x_max * (x_posArray[i] - x_posmin) / (x_posmax - x_posmin);
+            nodes[i].x = parseInt(x_);
+            let y_ = y_max * (y_posArray[i] - y_posmin) / (y_posmax - y_posmin);
+            nodes[i].y = parseInt(y_);
+        }
+
+        for (let i = 0; i < edges.length; i++) {
+            let edge = edges[i];
+            let targetIndex = nodesId2Index[edge.target];
+            let sourceIndex = nodesId2Index[edge.source];
+            if (y_posArray[targetIndex] > y_posArray[sourceIndex]) {
+                edge.targetAnchor = 0;
+                edge.sourceAnchor = 2;
+
+            } else if (y_posArray[targetIndex] < y_posArray[sourceIndex]) {
+                edge.targetAnchor = 2;
+                edge.sourceAnchor = 0;
+            } else {
+                if (x_posArray[targetIndex] > x_posArray[sourceIndex]) {
+                    edge.targetAnchor = 3;
+                    edge.sourceAnchor = 1;
+                } else {
+                    edge.targetAnchor = 1;
+                    edge.sourceAnchor = 3;
+                }
+            }
+
+
+            // console.log('targetIndex', targetIndex);
+            // console.log('sourceIndex', sourceIndex);
+            // console.log('targetAnchor', edge.targetAnchor);
+            // console.log('sourceAnchor', edge.sourceAnchor);
+        }
+    },
+
+
+    selectModuleInstanceAndPortToDraw(dpc_id) {
+        let drawModuleInstanceArray = [];
+        let drawPortInstanceArray = [];
+        let drawModuleId = [];
+        let nodesId2Index = {};
+
+        for (let i = 0; i < codeInfo.moduleInstanceNum; i++) {
+            let mi = codeInfo.moduleInstanceArray[i];
+            let type = codeInfo.moduleArray[mi.mptr_id].module_type;
+            if (type === 'Single' || (type === 'Multi' && mi.index == dpc_id)) {
+                nodesId2Index[mi.mi_id.toString()] = drawModuleInstanceArray.length;
+                drawModuleInstanceArray.push(mi);
+                drawModuleId.push(mi.mi_id);
+
+            }
+        }
+        const mid_set = new Set(drawModuleId);
+
+        for (let i = 0; i < codeInfo.portInstanceNum; i++) {
+            let pi = codeInfo.portInstanceArray[i];
+            if (pi.receive_index === 'null' || pi.transmit_index === 'null') {
+                continue;
+            }
+            if (mid_set.has(pi.receive_index) && mid_set.has(pi.transmit_index)) {
+                drawPortInstanceArray.push(pi);
+            }
+        }
+        return { drawModuleInstanceArray, drawPortInstanceArray, nodesId2Index }
     },
 
 

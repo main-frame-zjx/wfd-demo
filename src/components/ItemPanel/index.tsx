@@ -42,6 +42,16 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
      };
 
 
+     const handleImportJson = (event) => {
+          const files = event.target.files;
+          if (files && files.length > 0 && window.ImportGraphDataFromJson) {
+               const file = files[0];
+               // CodeAnalyseTool.setTmpData(file);
+               window.ImportGraphDataFromJson(); // 调用导入 JSON 的方法
+          }
+     };
+
+
      const handleDumpUpload = (event) => {
           const files = event.target.files; // 获取文件夹中的所有文件
           if (files) {
@@ -66,8 +76,27 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
 
      const handleGenerateStructure = () => {
           // 调用生成结构图的逻辑
-          console.log("生成结构图");
-          alert("生成结构图功能正在开发中！");
+          if (CodeAnalyseTool.getSuccInit()) {
+               if (window.GenerateGraph) {
+                    window.GenerateGraph();
+               }
+          } else {
+               alert('Please upload code!');
+          }
+
+     };
+
+
+     const handleExportJson = () => {
+          // 调用生成结构图的逻辑
+          if (CodeAnalyseTool.getSuccInit()) {
+               if (window.ExportGraphDataToJson) {
+                    window.ExportGraphDataToJson();
+               }
+          } else {
+               alert('Please upload code!');
+          }
+
      };
 
      return (
@@ -124,7 +153,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
 
                     </Panel>
                     <Panel header={i18n['task']} key="2" forceRender>
-                         <div>
+                         <div style={{ marginTop: 10 }}>
                               <button
                                    style={{
                                         display: 'block',
@@ -144,7 +173,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
 
                     </Panel>
                     <Panel header={i18n['gateway']} key="3" forceRender>
-                         <img data-item="{clazz:'exclusiveGateway',size:'40*40',label:''}"
+                         {/* <img data-item="{clazz:'exclusiveGateway',size:'40*40',label:''}"
                               src={require('../assets/flow/exclusive-gateway.svg')} style={{ width: 48, height: 48 }} />
                          <div>{i18n['exclusiveGateway']}</div>
                          <img data-item="{clazz:'parallelGateway',size:'40*40',label:''}"
@@ -152,10 +181,10 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                          <div>{i18n['parallelGateway']}</div>
                          <img data-item="{clazz:'inclusiveGateway',size:'40*40',label:''}"
                               src={require('../assets/flow/inclusive-gateway.svg')} style={{ width: 48, height: 48 }} />
-                         <div>{i18n['inclusiveGateway']}</div>
+                         <div>{i18n['inclusiveGateway']}</div> */}
                     </Panel>
                     <Panel header={i18n['catch']} key="4" forceRender>
-                         <img data-item={"{clazz:'timerCatch',size:'50*30',label:''}"}
+                         {/* <img data-item={"{clazz:'timerCatch',size:'50*30',label:''}"}
                               src={require('../assets/flow/timer-catch.svg')} style={{ width: 58, height: 38 }} />
                          <div>{i18n['timerEvent']}</div>
                          <img data-item={"{clazz:'messageCatch',size:'50*30',label:''}"}
@@ -163,15 +192,53 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                          <div>{i18n['messageEvent']}</div>
                          <img data-item={"{clazz:'signalCatch',size:'50*30',label:''}"}
                               src={require('../assets/flow/signal-catch.svg')} style={{ width: 58, height: 38 }} />
-                         <div>{i18n['signalEvent']}</div>
+                         <div>{i18n['signalEvent']}</div> */}
                     </Panel>
                     <Panel header={i18n['end']} key="5" forceRender>
-                         <img data-item={"{clazz:'end',size:'30*30',label:''}"}
-                              src={require('../assets/flow/end.svg')} style={{ width: 42, height: 42 }} />
-                         <div>{i18n['endEvent']}</div>
+                         <div style={{ marginTop: 10 }}>
+                              <button
+                                   style={{
+                                        display: 'block',
+                                        marginBottom: 10,
+                                        padding: '10px 20px',
+                                        backgroundColor: '#28a745',
+                                        color: '#fff',
+                                        borderRadius: '5px',
+                                        cursor: 'pointer',
+                                        width: '100%',
+                                   }}
+                                   onClick={handleExportJson}
+                              >
+                                   打包所有数据
+                              </button>
+
+
+
+                              <label
+                                   htmlFor="json-upload" // 关联 input 的 id
+                                   style={{
+                                        display: 'block',
+                                        marginBottom: 10,
+                                        padding: '10px 20px',
+                                        backgroundColor: '#28a745',
+                                        color: '#fff',
+                                        borderRadius: '5px',
+                                        cursor: 'pointer',
+                                        width: '100%',
+                                   }}
+                              >
+                                   上传代码文件
+                              </label>
+                              <input
+                                   id="json-upload"
+                                   type="file"
+                                   onChange={handleImportJson}
+                                   style={{ display: 'none' }} // 隐藏 input
+                              />
+                         </div>
                     </Panel>
                </Collapse>
-          </div>
+          </div >
      )
 });
 
