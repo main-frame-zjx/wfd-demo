@@ -3,6 +3,8 @@ let final_result = '';
 let filesToProcess = 0;
 let succInit = false;
 let cycleDict = {};
+let minCycle = 0;
+let maxCycle = 0;
 
 class DumpFile {
   constructor(name) {
@@ -122,6 +124,12 @@ const DumpAnalyseTool = {
     for (let i = 0; i < result.length; i++) {
       const lineList = result[i];
       const cycle = parseInt(lineList[0]); // 提取 cycle
+      if(i == 0){
+        minCycle = cycle;
+      }
+      if(i == result.length-1){
+        maxCycle = cycle;
+      }
       const value = lineList[1]; // 提取 value
       if (!dic.hasOwnProperty(cycle)) {
         dic[cycle] = [value]; // 如果 cycle 不存在，初始化一个数组
@@ -162,12 +170,44 @@ const DumpAnalyseTool = {
     return succInit;
   },
 
-  initCycleDict() {
-
+  calcPortTransferRate(result, cycle_num) {
+    result.sort((a, b) => {
+        return a[0] - b[0];
+      });
+      let dic = {};
+      for (let i = 0; i < result.length; i++) {
+        const lineList = result[i];
+        const cycle = parseInt(lineList[0]); // 提取 cycle
+        const value = lineList[1]; // 提取 value
+        if (!dic.hasOwnProperty(cycle)) {
+          dic[cycle] = [value]; // 如果 cycle 不存在，初始化一个数组
+        } else {
+          dic[cycle].push(value); // 如果 cycle 存在，将 value 添加到数组中
+        }
+      }
+      let fresult = '';
+      for (const key in dic) {
+        const parsedKey = parseInt(key);
+        if (dic.hasOwnProperty(key)) {
+          for (const value of dic[key]) {
+            let num = 0;
+            for (let cycle = parsedKey; cycle < parsedKey + cycle_num; cycle++) {
+              if (dic.hasOwnProperty(cycle) && dic[cycle].includes(value)) {
+                num++;
+              }
+            }
+            const frequency = num / 30;
+            fresult += `${parsedKey} ${value} ${frequency.toFixed(2)}\n`;
+          }
+        }
+      }
+      console.log('result:', fresult);
   },
-
-  calcPortTransferRate() {
-
+  getMinCycle(){
+    return minCycle;
+  },
+  getMaxCycle(){
+    return maxCycle;
   }
 };
 
