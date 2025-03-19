@@ -4,6 +4,7 @@ import styles from "./index.less";
 import { Tooltip } from "antd";
 import 'antd/lib/tooltip/style';
 import LangContext from "../../util/context";
+import DumpAnalyseTool from "../../util/dumpAnalyse";
 
 interface IProgressBarProps {
   percent: 88; // 当前进度值
@@ -67,8 +68,8 @@ const BottombarPanel = forwardRef<any, PropsWithChildren<any>>((props,ref) => {
     };
   }, []);
 
-  let num1=6603;
-  let num2=11077;
+  let num1=DumpAnalyseTool.getMinCycle();
+  let num2=DumpAnalyseTool.getMaxCycle();
   let now=Math.floor((num2-num1)*percent/100)+num1;
   return (
     <div className={styles.bottombar} ref={ref}>
