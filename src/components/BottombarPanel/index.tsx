@@ -1,4 +1,4 @@
-import React, { forwardRef,useRef,useEffect, useState, useContext, PropsWithChildren } from 'react';
+import React, { forwardRef, useRef, useEffect, useState, useContext, PropsWithChildren } from 'react';
 import '../../iconfont.css';
 import styles from "./index.less";
 import { Tooltip } from "antd";
@@ -10,17 +10,25 @@ interface IProgressBarProps {
   percent: 88; // 当前进度值
   maxPercent?: number; // 最大百分比（进度）
   color?: string; // 进度值颜色
-  showText?: "right"| "center" | "both"  // 标签显示在哪里：右边、中间
- 
+  showText?: "right" | "center" | "both"  // 标签显示在哪里：右边、中间
+
+}
+
+declare global {
+  interface Window {
+    UpdateMinAndMaxCycle: () => void;
+  }
 }
 
 
-const BottombarPanel = forwardRef<any, PropsWithChildren<any>>((props,ref) => {
+const BottombarPanel = forwardRef<any, PropsWithChildren<any>>((props, ref) => {
   const { i18n } = useContext(LangContext);
   const [textStyle, setTextStyle] = useState<string>("progressTextCenter");
   const newColor = "#63a3fc"; // 默认颜色
 
   const [percent, setPercent] = useState(0); // 当前进度值
+  const [num1, setNum1] = useState(DumpAnalyseTool.getMinCycle()); // 动态维护 num1
+  const [num2, setNum2] = useState(DumpAnalyseTool.getMaxCycle()); // 动态维护 num2
   const progressBarRef = useRef<HTMLDivElement>(null); // 进度条容器的引用
   const isDragging = useRef(false); // 是否正在拖动
 
@@ -68,9 +76,15 @@ const BottombarPanel = forwardRef<any, PropsWithChildren<any>>((props,ref) => {
     };
   }, []);
 
-  let num1=DumpAnalyseTool.getMinCycle();
-  let num2=DumpAnalyseTool.getMaxCycle();
-  let now=Math.floor((num2-num1)*percent/100)+num1;
+  const UpdateMinAndMaxCycles = () => {
+    setNum1(DumpAnalyseTool.getMinCycle());
+    setNum2(DumpAnalyseTool.getMaxCycle());
+  };
+
+  window.UpdateMinAndMaxCycle = UpdateMinAndMaxCycles;
+
+
+  let now = Math.floor((num2 - num1) * percent / 100) + num1;
   return (
     <div className={styles.bottombar} ref={ref}>
       <div className={styles.progressTextLeft}>{num1}</div>

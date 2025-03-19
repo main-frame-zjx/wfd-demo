@@ -66,9 +66,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                     await DumpAnalyseTool.analyseDumpFiles(files);
                     console.log("dump_info:", DumpAnalyseTool.getDumpInfo());
                     alert("数据文件上传解析成功！");
-                    // if (window.parent && window.parent.setbottombarVisable) {
-                    //      window.parent.setbottombarVisable(true);
-                    // }
+                    window.UpdateMinAndMaxCycle();
                })();
 
           }
