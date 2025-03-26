@@ -53,13 +53,13 @@ export interface DesignerStates {
   processModel: IProcessModel;
 }
 
-let bottombarVisible = false;
+// let bottombarVisible = false;
   
-function setbottombarVisible(flag:boolean){
-  bottombarVisible = flag;
-}
+// function setbottombarVisible(flag:boolean){
+//   bottombarVisible = flag;
+// }
 
-export{bottombarVisible,setbottombarVisible};
+// export{bottombarVisible,setbottombarVisible};
 
 
 export default class Designer extends React.Component<DesignerProps, DesignerStates> {

@@ -5,7 +5,7 @@ import 'antd/lib/collapse/style';
 import LangContext from "../../util/context";
 import CodeAnalyseTool from "../../util/codeAnalyse";
 import DumpAnalyseTool from "../../util/dumpAnalyse";
-import { setbottombarVisible } from '../../index';
+// import { setbottombarVisible } from '../../index';
 const { Panel } = Collapse;
 
 declare module 'react' {
@@ -67,8 +67,9 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                     await DumpAnalyseTool.analyseDumpFiles(files);
                     console.log("dump_info:", DumpAnalyseTool.getDumpInfo());
                     alert("数据文件上传解析成功！");
+                    window.UpdateMinMaxCycle();
                     // if (window.parent && window.parent.setbottombarVisible) {
-                    setbottombarVisible(true);
+                    // setbottombarVisible(true);
                     
                     // }
                })();
