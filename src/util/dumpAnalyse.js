@@ -88,7 +88,7 @@ const DumpAnalyseTool = {
                 if (flag === 1 && line.trim() !== '') {
                   const listLine = line.split(/\s+/);
                   resultLine.push(listLine[num]);
-                  resultLine.push(`fileName: ${fileName}`);
+                  resultLine.push(`fileName:${fileName}`);
                 }
                 if (line.startsWith('endclass')) {
                   flag = 1;
@@ -137,6 +137,8 @@ const DumpAnalyseTool = {
         dic[cycle].push(value); // 如果 cycle 存在，将 value 添加到数组中
       }
     }
+    cycleDict = dic;
+    console.log('Dict:',cycleDict);
     let fresult = '';
     for (const key in dic) {
       const parsedKey = parseInt(key);
@@ -172,13 +174,22 @@ const DumpAnalyseTool = {
 
   calcPortTransferRate(cycle_id, dump_file_name, window_size) {
     let num = 0;
+    let fileName = 'fileName:'+dump_file_name;
+    // console.log(fileName);
     for (let cycle = cycle_id; cycle < cycle_id + window_size; cycle++) {
         if (cycle in cycleDict) {
-            if (cycleDict[cycle].includes(dump_file_name)) {
-                num++;
+            // console.log('cycle:',cycle);
+            // console.log('cycleDict[cycle]:',cycleDict[cycle]);
+            for(let value of cycleDict[cycle]){
+              // console.log('value',value);
+              if (fileName == value) {
+                  // console.log('num:',num);
+                  num++;
+              }
             }
         }
     }
+    console.log('num',num);
     let frequency = num / window_size;
     return frequency;
   },
