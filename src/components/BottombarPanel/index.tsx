@@ -1,4 +1,4 @@
-import React, { forwardRef,useRef,useEffect, useState, useContext, PropsWithChildren } from 'react';
+import React, { forwardRef, useRef, useEffect, useState, useContext, PropsWithChildren } from 'react';
 import '../../iconfont.css';
 import styles from "./index.less";
 import { Tooltip } from "antd";
@@ -11,21 +11,21 @@ interface IProgressBarProps {
   percent: 88; // 当前进度值
   maxPercent?: number; // 最大百分比（进度）
   color?: string; // 进度值颜色
-  showText?: "right"| "center" | "both"  // 标签显示在哪里：右边、中间
- 
+  showText?: "right" | "center" | "both"  // 标签显示在哪里：右边、中间
+
 }
 
-declare global{
+declare global {
   interface Window {
     UpdateMinMaxCycle: () => void;
   }
 }
 
 
-const BottombarPanel = forwardRef<any, PropsWithChildren<any>>((props,ref) => {
+const BottombarPanel = forwardRef<any, PropsWithChildren<any>>((props, ref) => {
   const { i18n } = useContext(LangContext);
   const [textStyle, setTextStyle] = useState<string>("progressTextCenter");
-  const newColor = "#d89c7a"; // 默认颜色
+  const newColor = "#7ab3f4"; // 默认颜色
 
   const [percent, setPercent] = useState(0); // 当前进度值
   const [cycle_start, setcycle_start] = useState(0);
@@ -58,33 +58,33 @@ const BottombarPanel = forwardRef<any, PropsWithChildren<any>>((props,ref) => {
 
   const handlePlayClick = () => {
     if (isPlaying) {
-        // 如果正在播放，清除定时器并将按钮文字改为播放
-        clearInterval(intervalRef.current);
-        setIsPlaying(false);
+      // 如果正在播放，清除定时器并将按钮文字改为播放
+      clearInterval(intervalRef.current);
+      setIsPlaying(false);
     } else {
-        // 如果未播放，启动定时器并将按钮文字改为暂停
-        intervalRef.current = setInterval(() => {
-          setPercent((prevPercent) => {
-              if (prevPercent < 100) {
-                  const newPercent = prevPercent + 1;
-                  setNow((prevNow) => prevNow + Math.floor((cycle_end - cycle_start) / 100));
-                  if(now > cycle_end){
-                    setNow(cycle_end);
-                  }
-                  console.log("newPercent:", newPercent)
-                  console.log('now:', now);
-                  return newPercent;
-              } else {
-                  setNow(cycle_end);
-                  clearInterval(intervalRef.current);
-                  setIsPlaying(false);
-                  return prevPercent;
-              }
-          });
+      // 如果未播放，启动定时器并将按钮文字改为暂停
+      intervalRef.current = setInterval(() => {
+        setPercent((prevPercent) => {
+          if (prevPercent < 100) {
+            const newPercent = prevPercent + 1;
+            setNow((prevNow) => prevNow + Math.floor((cycle_end - cycle_start) / 100));
+            if (now > cycle_end) {
+              setNow(cycle_end);
+            }
+            console.log("newPercent:", newPercent)
+            console.log('now:', now);
+            return newPercent;
+          } else {
+            setNow(cycle_end);
+            clearInterval(intervalRef.current);
+            setIsPlaying(false);
+            return prevPercent;
+          }
+        });
       }, 100); // 每 100 毫秒增加 1% 进度
-        setIsPlaying(true);
+      setIsPlaying(true);
     }
-};
+  };
 
   const updateProgress = (e: React.MouseEvent<HTMLDivElement> | MouseEvent) => {
     if (!progressBarRef.current) return;
@@ -96,7 +96,7 @@ const BottombarPanel = forwardRef<any, PropsWithChildren<any>>((props,ref) => {
     const newPercent = Math.min(100, Math.max(0, ((x - rect.left) / width) * 100));
     setPercent(newPercent);
 
-    setNow(Math.floor((cycle_end-cycle_start)*newPercent/100)+cycle_start);
+    setNow(Math.floor((cycle_end - cycle_start) * newPercent / 100) + cycle_start);
     // console.log('newPercent:', newPercent);
     // console.log('cycle_start:', cycle_start);
     // console.log('cal:', Math.floor((cycle_end-cycle_start)*newPercent/100)+cycle_start);
@@ -104,40 +104,48 @@ const BottombarPanel = forwardRef<any, PropsWithChildren<any>>((props,ref) => {
   };
 
   useEffect(() => {
-    console.log('Adding event listeners');
+    // console.log('Adding event listeners');
     console.log('now 更新后的值:', now);
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
 
     return () => {
-      console.log('Removing event listeners');
+      // console.log('Removing event listeners');
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
   }, [now, percent]);
 
+
+  // 新增 useEffect 监听 now 变化
+  useEffect(() => {
+    if (typeof window.RefreshGraph === 'function') {
+      window.RefreshGraph(now); // 调用父组件方法
+    }
+  }, [now]);
+
   const moveLeft = () => {
     if (percent > 0) {
-        setPercent(percent - 1/(cycle_end-cycle_start));
-        setNow(now - 1);
+      setPercent(percent - 1 / (cycle_end - cycle_start));
+      setNow(now - 1);
     }
   };
 
   const moveRight = () => {
-      if (percent < 100) {
-          setPercent(percent + 1/(cycle_end-cycle_start));
-          setNow(now + 1);
-      }
+    if (percent < 100) {
+      setPercent(percent + 1 / (cycle_end - cycle_start));
+      setNow(now + 1);
+    }
   };
 
   const UpdateMinMaxCycles = () => {
     setcycle_start(DumpAnalyseTool.getMinCycle());
     setcycle_end(DumpAnalyseTool.getMaxCycle());
     setNow(DumpAnalyseTool.getMinCycle());
-    if(cycle_end!=0)setIsShow(true);
+    if (cycle_end != 0) setIsShow(true);
   }
-  
+
   window.UpdateMinMaxCycle = UpdateMinMaxCycles;
 
   return (
@@ -154,17 +162,17 @@ const BottombarPanel = forwardRef<any, PropsWithChildren<any>>((props,ref) => {
       <div className={styles.button}>
         {/* <button className={styles.leftButton} onClick={moveLeft}>向左</button> */}
         <button className={styles.icon_button} onClick={moveLeft}>
-            <div className={styles.left_icon} />
+          <div className={styles.left_icon} />
         </button>
         <button className={styles.playButton} onClick={handlePlayClick}>
-                {isPlaying ? '暂停' : '播放'}</button>
+          {isPlaying ? '暂停' : '播放'}</button>
         <button className={styles.icon_button} onClick={moveRight}>
-            <div className={styles.right_icon} />
+          <div className={styles.right_icon} />
         </button>
       </div>
-      
+
     </div>
-    
+
   );
 });
 

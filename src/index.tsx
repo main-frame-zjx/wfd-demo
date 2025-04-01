@@ -28,6 +28,7 @@ declare global {
     GenerateGraph: () => void;
     ExportGraphDataToJson: () => void;
     ImportGraphDataFromJson: () => void;
+    RefreshGraph: (currentCycle: number) => void;
   }
 }
 
@@ -54,7 +55,7 @@ export interface DesignerStates {
 }
 
 // let bottombarVisible = false;
-  
+
 // function setbottombarVisible(flag:boolean){
 //   bottombarVisible = flag;
 // }
@@ -166,10 +167,63 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
   }
 
   GenerateGraph = () => {
-    let data = CodeAnalyseTool.getRenderData(0);
+    let data = CodeAnalyseTool.initRenderInfo(0);
     this.graph.data(data ? this.initShape(data) : { nodes: [], edges: [] });
     this.graph.render();
   }
+
+  calcColor = (cycle_id: number, dump_file_name: string) => {
+    let window_size = 20;
+    let rate = DumpAnalyseTool.calcPortTransferRate(cycle_id, dump_file_name, window_size);
+    console.log(cycle_id, dump_file_name, 'rate:', rate);
+    if (rate === 0) {
+      return { stroke: 'rgb(216, 216, 216)' };
+    }
+    let r = 0, g = 0, b = 0;
+    if (rate <= 0.5) {
+      r = Math.round(255 * (2 * rate));
+      g = 255;
+    } else {
+      r = 255;
+      g = 255 - Math.round(255 * (2 * (rate - 0.5)))
+    }
+
+    // console.log('stroke', `rgb(${r}, ${g}, ${b})`);
+    return { stroke: `rgb(${r}, ${g}, ${b})` }
+  }
+
+
+
+  RefreshGraph = (currentCycle: number) => {
+    // // 根据当前周期更新图形数据
+    if (CodeAnalyseTool.getSuccInitCodeInfo() && CodeAnalyseTool.getSuccInitRenderInfo() && DumpAnalyseTool.getSuccInit()) {
+      CodeAnalyseTool.updateRenderData(currentCycle);
+      // let renderInfo = CodeAnalyseTool.getRenderInfo();
+      // TODO: 渲染方案1，需要进行性能测试
+      // if (this.graph) {
+      //   this.graph.changeData(renderInfo.data);
+      //   this.graph.render();
+      // }
+
+      // TODO: 渲染方案2，需要进行性能测试
+      if (this.graph) {
+        const edges = this.graph.getEdges();
+        console.log(edges);
+        for (let i = 0; i < edges.length; i++) {
+          let edge = edges[i];
+          const model = edge.getModel();
+          let style = this.calcColor(currentCycle, model.MxFileName);
+          this.graph.updateItem(edge, {
+            style: style
+            // style: { stroke: renderInfo.data.edges[i].color } // 仅更新颜色属性
+          });
+        }
+        this.graph.get('canvas').draw();
+      }
+
+    }
+
+  };
 
   componentDidMount() {
     const { isView, mode } = this.props;
@@ -190,13 +244,44 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
       height: height,
       width: width,
       modes: {
-        default: ['drag-canvas', 'clickSelected'],
+        default: ['drag-canvas', 'clickSelected',
+          {
+            type: 'tooltip-edge',
+            formatText: (model) => {
+              var text = 'source: ' + model.source + '<br/> target: ' + model.target;
+              console.log('hello');
+              return text;
+            },
+
+            shouldUpdate: function shouldUpdate(e) {
+              return true;
+            }
+          },
+        ],
         view: [],
         edit: ['drag-canvas', 'hoverNodeActived', 'hoverAnchorActived', 'dragNode', 'dragEdge',
           'dragPanelItemAddNode', 'clickSelected', 'deleteItem', 'itemAlign', 'dragPoint', 'brush-select'],
       },
+      edgeStateStyles: {
+        hover: {
+          stroke: 'rgb(126, 183, 236)', // 悬停颜色
+          lineWidth: 3       // 悬醒线宽
+        },
+        selected: {
+          shadowColor: '#f00', // 选中阴影
+          shadowBlur: 10
+        }
+      },
       defaultEdge: {
-        type: 'flow-polyline-round',
+        // type: 'flow-polyline-round',
+        type: 'cubic-vertical',
+        // type: 'smooth',
+        style: {
+          // stroke: 'rgb(194, 207, 209)', // 线条颜色
+          lineWidth: 2,      // 线条宽度
+          lineAppendWidth: 10,
+          endArrow: true,    // 是否显示箭头
+        },
       },
     });
     this.graph.saveXML = (createFile = true) => exportXML(this.graph.save(), this.state.processModel, createFile);
@@ -217,6 +302,7 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
     window.GenerateGraph = this.GenerateGraph;
     window.ExportGraphDataToJson = this.ExportGraphDataToJson;
     window.ImportGraphDataFromJson = this.ImportGraphDataFromJson;
+    window.RefreshGraph = this.RefreshGraph;
   }
 
 
@@ -237,6 +323,15 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
   }
 
   initEvents() {
+    this.graph.on('edge:mouseenter', (e) => {
+      const edge = e.item;
+      graph.setItemState(edge, 'hover', true); // 激活 hover 状态
+    });
+
+    this.graph.on('edge:mouseleave', (e) => {
+      const edge = e.item;
+      graph.setItemState(edge, 'hover', false); // 关闭 hover 状态
+    });
     this.graph.on('afteritemselected', (items) => {
       if (items && items.length > 0) {
         let item = this.graph.findById(items[0]);
@@ -320,7 +415,7 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
     const i18n = locale[lang.toLowerCase()];
     const readOnly = mode !== "edit";
 
-    
+
     return (
       <LangContext.Provider value={{ i18n, lang }}>
         <div className={styles.root}>

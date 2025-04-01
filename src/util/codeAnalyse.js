@@ -1,7 +1,9 @@
 // codeAnalyse.js
 let codeInfo = null;
-let succInit = false;
+let succInitCodeInfo = false;
+let succInitRenderInfo = false;
 let tmpData = null;
+let renderInfo = null
 class CodeInfo {
     constructor() {
         this.moduleNum = 0;
@@ -10,6 +12,16 @@ class CodeInfo {
         this.moduleArray = [];
         this.moduleInstanceArray = [];
         this.portInstanceArray = [];
+    }
+}
+
+class RenderInfo {
+    constructor() {
+        this.data = {
+            nodes: [],
+            edges: [],
+        };
+        this.nodesId2Index = {};
     }
 }
 
@@ -148,7 +160,7 @@ const CodeAnalyseTool = {
                                 curLine++;
                             }
 
-                            succInit = true;
+                            succInitCodeInfo = true;
                         })
                         .catch((error) => {
                             console.error('Error reading file:', error);
@@ -176,6 +188,7 @@ const CodeAnalyseTool = {
 
     initCodeInfo() {
         codeInfo = new CodeInfo();
+        renderInfo = new RenderInfo();
     },
 
     getCodeInfo() {
@@ -186,13 +199,19 @@ const CodeAnalyseTool = {
         codeInfo = info;
     },
 
-    getSuccInit() {
-        return succInit;
+    getSuccInitCodeInfo() {
+        return succInitCodeInfo;
     },
 
-    setSuccInit(succ) {
-        succInit = succ;
+    setSuccInitCodeInfo(succ) {
+        succInitCodeInfo = succ;
     },
+
+    getSuccInitRenderInfo() {
+        return succInitRenderInfo;
+    },
+
+
 
     getTmpData() {
         return tmpData;
@@ -202,7 +221,7 @@ const CodeAnalyseTool = {
         tmpData = data;
     },
 
-    getRenderData(dpc_id) {
+    initRenderInfo(dpc_id) {
         let nodes = [];
         let edges = [];
         if (dpc_id == -1) {
@@ -234,18 +253,51 @@ const CodeAnalyseTool = {
                     sourceAnchor: 0,
                     targetAnchor: 1,
                     clazz: 'flow',
+                    MxLabel: pi.name,
+                    MxFileName: pi.dump_file_name,
+                    //shape: 'arc',
+                    // shape: 'cubic-vertical',
+                    color: 'rgb(194, 207, 209)',
+                    // label: pi.dump_file_name,
+                    // curveOffset: 10,
+
                 };
                 edges.push(edge);
             }
             this.setPositionAndAnchor(nodes, edges, nodesId2Index, 900, 500);
             console.log('nodesId2Index', nodesId2Index);
-
+            renderInfo.data.nodes = nodes;
+            renderInfo.data.edges = edges;
+            renderInfo.nodesId2Index = nodesId2Index;
         }
 
 
-        console.log('nodes', nodes);
-        console.log('edges', edges);
+        console.log('renderInfo', renderInfo);
+        succInitRenderInfo = true;
         return { nodes: nodes, edges: edges };
+    },
+
+    updateRenderData(currentCycle) {
+        renderInfo.data.edges.forEach(edge => {
+            edge.color = this.calcColor(currentCycle);
+        });
+        // console.log(renderInfo.data.edges);
+    },
+
+    calcColor(currentCycle) {
+        let minCycle = 8000;
+        let maxCycle = 11000;
+        // 计算归一化比例（0~1）
+        let ratio = (currentCycle - minCycle) / (maxCycle - minCycle);
+        ratio = Math.max(0, Math.min(1, ratio)); // 边界约束
+
+        // 基于亮度线性映射的 RGB 计算
+        const brightness = Math.round(ratio * 255);
+        return `rgb(${brightness}, ${brightness}, ${brightness})`;
+    },
+
+    getRenderInfo() {
+        return renderInfo;
     },
 
 

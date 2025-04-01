@@ -1,19 +1,24 @@
 .bottombar {
-  display: flex; /* 使用 Flexbox 布局 */
-  align-items: center; /* 垂直居中对齐 */
-  justify-content: space-between; /* 子元素之间的间距均匀分布 */
-  width: 100%; /* 容器宽度 */
+  display: flex;
+  /* 使用 Flexbox 布局 */
+  align-items: center;
+  /* 垂直居中对齐 */
+  justify-content: space-between;
+  /* 子元素之间的间距均匀分布 */
+  width: 100%;
+  /* 容器宽度 */
 }
 
 .playButton {
   padding: 10px 15px;
-  background-color: #b77f70;
+  background-color: #7ab3f4;
   color: white;
   border: none;
   border-radius: 3px;
   cursor: pointer;
   margin: auto;
-  transform: translateY(-8px); /* 向上移动 8px */
+  transform: translateY(-8px);
+  /* 向上移动 8px */
   align-items: center;
 }
 
@@ -21,7 +26,7 @@
   display: flex;
   justify-content: space-between;
 }
- 
+
 .progressContainer {
   width: 100%;
   // flex: 1; /* 进度条容器占据剩余空间 */
@@ -30,9 +35,11 @@
   border-radius: 10px;
   overflow: hidden;
   position: relative;
-  margin: auto; /* 水平居中 */
+  margin: auto;
+  /* 水平居中 */
   cursor: pointer;
 }
+
 .button {
   width: 200px;
   margin: 0 auto;
@@ -51,7 +58,7 @@
   height: 0;
   border-top: 15px solid transparent;
   border-bottom: 15px solid transparent;
-  border-right: 20px solid #b77f70;
+  border-right: 20px solid #7ab3f4;
 }
 
 .right_icon {
@@ -59,50 +66,55 @@
   height: 0;
   border-top: 15px solid transparent;
   border-bottom: 15px solid transparent;
-  border-left: 20px solid #b77f70;
+  border-left: 20px solid #7ab3f4;
 }
 
 .leftButton {
   padding: 5px 10px;
-    background-color: #b77f70;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    margin: 0 5px;
+  background-color: #7ab3f4;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  margin: 0 5px;
 }
 
 .rightButton {
-    padding: 5px 10px;
-    background-color: #b77f70;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    margin: 0 5px;
+  padding: 5px 10px;
+  background-color: #7ab3f4;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  margin: 0 5px;
 }
 
 .progressBar {
   height: 100%;
-  background-color: #d89c7a;
+  background-color: #7ab3f4;
   transition: width 0.03s ease;
   border-radius: 10px;
 }
- 
+
 .progressTextCenter {
   // position: absolute;
   // top: 50%;
   // left: 50%;
   // transform: translate(-50%, -50%);
-  margin: 0 10px; /* 文本左右间距 */
+  margin: 0 10px;
+  /* 文本左右间距 */
   color: #000;
   font-size: 12px;
 }
- 
-.progressTextLeft, .progressTextRight {
-  font-size: 12px; /* 文本字体大小 */
-  margin: 0 10px; /* 文本左右间距 */
+
+.progressTextLeft,
+.progressTextRight {
+  font-size: 12px;
+  /* 文本字体大小 */
+  margin: 0 10px;
+  /* 文本左右间距 */
 }
+
 // .progressTextRight {
 //   margin-left: 10px;
 //   margin-top: -3px;

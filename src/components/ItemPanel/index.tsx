@@ -70,7 +70,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                     window.UpdateMinMaxCycle();
                     // if (window.parent && window.parent.setbottombarVisible) {
                     // setbottombarVisible(true);
-                    
+
                     // }
                })();
 
@@ -79,7 +79,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
 
      const handleGenerateStructure = () => {
           // 调用生成结构图的逻辑
-          if (CodeAnalyseTool.getSuccInit()) {
+          if (CodeAnalyseTool.getSuccInitCodeInfo()) {
                if (window.GenerateGraph) {
                     window.GenerateGraph();
                }
@@ -92,7 +92,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
 
      const handleExportJson = () => {
           // 调用生成结构图的逻辑
-          if (CodeAnalyseTool.getSuccInit()) {
+          if (CodeAnalyseTool.getSuccInitCodeInfo()) {
                if (window.ExportGraphDataToJson) {
                     window.ExportGraphDataToJson();
                }
@@ -114,10 +114,11 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                                         display: 'inline-block',
                                         marginBottom: 10,
                                         padding: '10px 20px',
-                                        backgroundColor: '#007bff',
+                                        backgroundColor: '#8a95a9',
                                         color: '#fff',
                                         borderRadius: '5px',
                                         cursor: 'pointer',
+                                        width: '90%',
                                    }}
                               >
                                    上传代码文件
@@ -137,10 +138,11 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                                         display: 'inline-block',
                                         marginBottom: 10,
                                         padding: '10px 20px',
-                                        backgroundColor: '#007bff',
+                                        backgroundColor: '#8a95a9',
                                         color: '#fff',
                                         borderRadius: '5px',
                                         cursor: 'pointer',
+                                        width: '90%',
                                    }}
                               >
                                    上传数据文件
@@ -159,14 +161,14 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                          <div style={{ marginTop: 10 }}>
                               <button
                                    style={{
-                                        display: 'block',
+                                        display: 'inline-block',
                                         marginBottom: 10,
                                         padding: '10px 20px',
-                                        backgroundColor: '#28a745',
+                                        backgroundColor: '#9aa690',
                                         color: '#fff',
                                         borderRadius: '5px',
                                         cursor: 'pointer',
-                                        width: '100%',
+                                        width: '90%',
                                    }}
                                    onClick={handleGenerateStructure}
                               >
@@ -201,18 +203,18 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                          <div style={{ marginTop: 10 }}>
                               <button
                                    style={{
-                                        display: 'block',
+                                        display: 'inline-block',
                                         marginBottom: 10,
                                         padding: '10px 20px',
                                         backgroundColor: '#28a745',
                                         color: '#fff',
                                         borderRadius: '5px',
                                         cursor: 'pointer',
-                                        width: '100%',
+                                        width: '90%',
                                    }}
                                    onClick={handleExportJson}
                               >
-                                   打包所有数据
+                                   下载workspace
                               </button>
 
 
@@ -220,17 +222,17 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                               <label
                                    htmlFor="json-upload" // 关联 input 的 id
                                    style={{
-                                        display: 'block',
+                                        display: 'inline-block',
                                         marginBottom: 10,
                                         padding: '10px 20px',
                                         backgroundColor: '#28a745',
                                         color: '#fff',
                                         borderRadius: '5px',
                                         cursor: 'pointer',
-                                        width: '100%',
+                                        width: '90%',
                                    }}
                               >
-                                   上传代码文件
+                                   上传workspace
                               </label>
                               <input
                                    id="json-upload"
