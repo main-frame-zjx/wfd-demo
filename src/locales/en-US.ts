@@ -64,6 +64,8 @@ export default {
   'process': 'Workflow',
   'process.id': 'Workflow ID',
   'process.name': 'Workflow Name',
+  'process.windowSize': 'window size',
+  'process.dpcId': 'dpc id',
   'process.dataObjs': 'Data Objects',
   'process.signalDefs': 'Signal Defs',
   'process.messageDefs': 'Message Defs',

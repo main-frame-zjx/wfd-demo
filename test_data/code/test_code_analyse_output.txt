@@ -47,16 +47,24 @@
 34 8 gff_module 2
 35 8 gff_module 3
 36 9 pGfdBlock 0
-12
-0 GFD_GIA_draw_cmd_port[0] dpc0_gfd_gia_draw.model_vec 0 36
-1 GFD_GIA_draw_cmd_port[1] dpc1_gfd_gia_draw.model_vec 1 36
-2 GFD_GIA_draw_cmd_port[2] dpc2_gfd_gia_draw.model_vec 2 36
-3 GFD_GIA_draw_cmd_port[3] dpc3_gfd_gia_draw.model_vec 3 36
-4 DSD_GSD_draw_cmd_port[0] dpc0_dsd_gsd_draw.model_vec 16 20
-5 DSD_GSD_draw_cmd_port[1] dpc1_dsd_gsd_draw.model_vec 17 21
-6 DSD_GSD_draw_cmd_port[2] dpc2_dsd_gsd_draw.model_vec 18 22
-7 DSD_GSD_draw_cmd_port[3] dpc3_dsd_gsd_draw.model_vec 19 23
-8 LSD_PAI_draw_cmd_port[0] dpc0_lsd_pai_draw.model_vec 24 28
-9 LSD_PAI_draw_cmd_port[1] dpc1_lsd_pai_draw.model_vec 25 29
-10 LSD_PAI_draw_cmd_port[2] dpc2_lsd_pai_draw.model_vec 26 30
-11 LSD_PAI_draw_cmd_port[3] dpc3_lsd_pai_draw.model_vec 27 31
+20
+0 GFD_GIA_draw_cmd_port[0] dpc0_gfd_gia_draw_cmd.model_vec 0 36
+1 GFD_GIA_draw_cmd_port[1] dpc1_gfd_gia_draw_cmd.model_vec 1 36
+2 GFD_GIA_draw_cmd_port[2] dpc2_gfd_gia_draw_cmd.model_vec 2 36
+3 GFD_GIA_draw_cmd_port[3] dpc3_gfd_gia_draw_cmd.model_vec 3 36
+4 DSD_GSD_draw_port[0] dpc0_dsd_gsd_draw.model_vec 16 20
+5 DSD_GSD_draw_port[1] dpc1_dsd_gsd_draw.model_vec 17 21
+6 DSD_GSD_draw_port[2] dpc2_dsd_gsd_draw.model_vec 18 22
+7 DSD_GSD_draw_port[3] dpc3_dsd_gsd_draw.model_vec 19 23
+8 LSD_PAI_draw_port[0] dpc0_lsd_pai_draw.model_vec 24 28
+9 LSD_PAI_draw_port[1] dpc1_lsd_pai_draw.model_vec 25 29
+10 LSD_PAI_draw_port[2] dpc2_lsd_pai_draw.model_vec 26 30
+11 LSD_PAI_draw_port[3] dpc3_lsd_pai_draw.model_vec 27 31
+12 GIA_VSD_draw_port[0] dpc0_gia_vsd_draw.model_vec 4 0
+13 GIA_VSD_draw_port[1] dpc1_gia_vsd_draw.model_vec 5 1
+14 GIA_VSD_draw_port[2] dpc2_gia_vsd_draw.model_vec 6 2
+15 GIA_VSD_draw_port[3] dpc3_gia_vsd_draw.model_vec 7 3
+16 VSD_HSD_draw_port[0] dpc0_vsd_hsd_draw.model_vec 8 4
+17 VSD_HSD_draw_port[1] dpc1_vsd_hsd_draw.model_vec 9 5
+18 VSD_HSD_draw_port[2] dpc2_vsd_hsd_draw.model_vec 10 6
+19 VSD_HSD_draw_port[3] dpc3_vsd_hsd_draw.model_vec 11 7

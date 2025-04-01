@@ -20,8 +20,10 @@ struct Xgf_ptr_object
         for (int i = 0; i < 4; i++)
         {
             Xgf_ptr_obj.GFD_GIA_draw_cmd_port[i] = new Port(128, "dpc" + to_string(i) + "_gfd_gia_draw_cmd.model_vec");
-            Xgf_ptr_obj.DSD_GSD_draw_cmd_port[i] = new Port(128, "dpc" + to_string(i) + "_dsd_gsd_draw_cmd.model_vec");
-            Xgf_ptr_obj.LSD_PAI_draw_cmd_port[i] = new Port(128, "dpc" + to_string(i) + "_lsd_pai_draw_cmd.model_vec");
+            Xgf_ptr_obj.DSD_GSD_draw_port[i] = new Port(128, "dpc" + to_string(i) + "_dsd_gsd_draw.model_vec");
+            Xgf_ptr_obj.LSD_PAI_draw_port[i] = new Port(128, "dpc" + to_string(i) + "_lsd_pai_draw.model_vec");
+            Xgf_ptr_obj.GIA_VSD_draw_port[i] = new Port(128, "dpc" + to_string(i) + "_gia_vsd_draw.model_vec");
+            Xgf_ptr_obj.VSD_HSD_draw_port[i] = new Port(128, "dpc" + to_string(i) + "_vsd_hsd_draw.model_vec");
         }
         for (int i = 0; i < 4; i++)
         {

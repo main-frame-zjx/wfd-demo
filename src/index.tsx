@@ -96,6 +96,8 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
         dataObjs: [],
         signalDefs: [],
         messageDefs: [],
+        windowSize: 20,
+        dpcId: 0,
       },
     };
   }
@@ -173,23 +175,60 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
   }
 
   calcColor = (cycle_id: number, dump_file_name: string) => {
-    let window_size = 20;
+    let window_size = this.state.processModel.windowSize;
     let rate = DumpAnalyseTool.calcPortTransferRate(cycle_id, dump_file_name, window_size);
-    console.log(cycle_id, dump_file_name, 'rate:', rate);
-    if (rate === 0) {
-      return { stroke: 'rgb(216, 216, 216)' };
-    }
-    let r = 0, g = 0, b = 0;
-    if (rate <= 0.5) {
-      r = Math.round(255 * (2 * rate));
-      g = 255;
-    } else {
-      r = 255;
-      g = 255 - Math.round(255 * (2 * (rate - 0.5)))
-    }
+    const style: any = {
+      lineWidth: 2,
+      shadowColor: 'transparent',
+      shadowBlur: 0,
+      shadowOffsetX: 0,
+      shadowOffsetY: 0,
+      currentRate: rate
+    };
 
-    // console.log('stroke', `rgb(${r}, ${g}, ${b})`);
-    return { stroke: `rgb(${r}, ${g}, ${b})` }
+
+    if (rate === 0) {
+      return { ...style, stroke: 'rgb(230, 230, 230)' }; // 更柔和的灰色
+    }
+    // HSL颜色空间插值
+    const hue = 120 - (rate * 120); // 绿(120°)→红(0°)
+    const saturation = 95;
+    const lightness = 50 - (rate * 15); // 降低亮度增强对比
+
+    // HSL转RGB
+    const c = (1 - Math.abs(2 * lightness / 100 - 1)) * saturation / 100;
+    const x = c * (1 - Math.abs((hue / 60) % 2 - 1));
+    const m = lightness / 100 - c / 2;
+
+    let r, g, b;
+    if (hue < 60) [r, g, b] = [c, x, 0];
+    else if (hue < 120) [r, g, b] = [x, c, 0];
+    // 其他色相分支...
+
+    style.stroke = `rgb(${Math.round((r + m) * 255)}, ${Math.round((g + m) * 255)}, ${Math.round((b + m) * 255)})`;
+
+    // 动态线宽与阴影增强
+    if (rate > 0.7) {
+      style.lineWidth = 2 + Math.pow(rate, 3) * 4; // 非线性增长
+      style.shadowColor = style.stroke.replace(')', ', 0.3)').replace('rgb', 'rgba');
+      style.shadowBlur = 8 + rate * 10;
+      style.shadowOffsetX = 3;
+      style.shadowOffsetY = 3;
+    } else if (rate > 0.3) {
+      style.lineWidth = 2 + rate * 2;
+    }
+    return style;
+    // let r = 0, g = 0, b = 0;
+    // if (rate <= 0.5) {
+    //   r = Math.round(255 * (2 * rate));
+    //   g = 255;
+    // } else {
+    //   r = 255;
+    //   g = 255 - Math.round(255 * (2 * (rate - 0.5)))
+    // }
+
+    // // console.log('stroke', `rgb(${r}, ${g}, ${b})`);
+    // return { stroke: `rgb(${r}, ${g}, ${b})` }
   }
 
 
@@ -208,13 +247,14 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
       // TODO: 渲染方案2，需要进行性能测试
       if (this.graph) {
         const edges = this.graph.getEdges();
-        console.log(edges);
+        // console.log(edges);
         for (let i = 0; i < edges.length; i++) {
           let edge = edges[i];
           const model = edge.getModel();
           let style = this.calcColor(currentCycle, model.MxFileName);
           this.graph.updateItem(edge, {
-            style: style
+            style: style,
+            currentRate: style.currentRate
             // style: { stroke: renderInfo.data.edges[i].color } // 仅更新颜色属性
           });
         }
@@ -275,11 +315,12 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
       defaultEdge: {
         // type: 'flow-polyline-round',
         type: 'cubic-vertical',
+        // type: 'arc',
         // type: 'smooth',
         style: {
           // stroke: 'rgb(194, 207, 209)', // 线条颜色
           lineWidth: 2,      // 线条宽度
-          lineAppendWidth: 10,
+          lineAppendWidth: 20,
           endArrow: true,    // 是否显示箭头
         },
       },

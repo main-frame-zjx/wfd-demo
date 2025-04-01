@@ -2,15 +2,15 @@ import { Moment } from 'moment';
 export interface IDefaultModel {
   id?: string;
   clazz?: 'start' | 'end' | 'gateway' | 'exclusiveGateway' | 'parallelGateway' | 'inclusiveGateway'
-    | 'timerStart' | 'messageStart' | 'signalStart' | 'userTask' | 'scriptTask' | 'mailTask'
-    | 'javaTask' | 'receiveTask' | 'timerCatch' | 'messageCatch' | 'signalCatch' | 'subProcess' | 'flow' | 'process';
+  | 'timerStart' | 'messageStart' | 'signalStart' | 'userTask' | 'scriptTask' | 'mailTask'
+  | 'javaTask' | 'receiveTask' | 'timerCatch' | 'messageCatch' | 'signalCatch' | 'subProcess' | 'flow' | 'process';
   label?: string;
   x?: number;
   y?: number;
   active?: boolean;
   hideIcon?: boolean;
 }
-export interface IJavaModel extends IDefaultModel{
+export interface IJavaModel extends IDefaultModel {
   javaClass?: string;
 }
 export interface IMailModel extends IDefaultModel {
@@ -51,12 +51,17 @@ export interface IFlowModel extends IDefaultModel {
   conditionExpression?: string;
   seq?: string;
   reverse?: boolean;
+  MxLabel?: string,
+  MxFileName?: string,
+  currentRate?: number;
 }
 export interface IProcessModel extends IDefaultModel {
   name?: string;
   dataObjs?: object[];
   signalDefs?: object[];
   messageDefs?: object[];
+  windowSize?: number;
+  dpcId?: number;
 }
 
 export interface ISelectData {

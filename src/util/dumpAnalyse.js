@@ -124,10 +124,10 @@ const DumpAnalyseTool = {
     for (let i = 0; i < result.length; i++) {
       const lineList = result[i];
       const cycle = parseInt(lineList[0]); // 提取 cycle
-      if(i == 0){
+      if (i == 0) {
         minCycle = cycle;
       }
-      if(i == result.length-1){
+      if (i == result.length - 1) {
         maxCycle = cycle;
       }
       const value = lineList[1]; // 提取 value
@@ -138,7 +138,7 @@ const DumpAnalyseTool = {
       }
     }
     cycleDict = dic;
-    console.log('Dict:',cycleDict);
+    console.log('Dict:', cycleDict);
     let fresult = '';
     for (const key in dic) {
       const parsedKey = parseInt(key);
@@ -174,29 +174,29 @@ const DumpAnalyseTool = {
 
   calcPortTransferRate(cycle_id, dump_file_name, window_size) {
     let num = 0;
-    let fileName = 'fileName:'+dump_file_name;
+    let fileName = 'fileName:' + dump_file_name;
     // console.log(fileName);
     for (let cycle = cycle_id; cycle < cycle_id + window_size; cycle++) {
-        if (cycle in cycleDict) {
-            // console.log('cycle:',cycle);
-            // console.log('cycleDict[cycle]:',cycleDict[cycle]);
-            for(let value of cycleDict[cycle]){
-              // console.log('value',value);
-              if (fileName == value) {
-                  // console.log('num:',num);
-                  num++;
-              }
-            }
+      if (cycle in cycleDict) {
+        // console.log('cycle:',cycle);
+        // console.log('cycleDict[cycle]:',cycleDict[cycle]);
+        for (let value of cycleDict[cycle]) {
+          // console.log('value',value);
+          if (fileName == value) {
+            // console.log('num:',num);
+            num++;
+          }
         }
+      }
     }
-    console.log('num',num);
+    // console.log('num',num);
     let frequency = num / window_size;
     return frequency;
   },
-  getMinCycle(){
+  getMinCycle() {
     return minCycle;
   },
-  getMaxCycle(){
+  getMaxCycle() {
     return maxCycle;
   }
 };

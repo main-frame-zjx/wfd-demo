@@ -260,6 +260,7 @@ const CodeAnalyseTool = {
                     color: 'rgb(194, 207, 209)',
                     // label: pi.dump_file_name,
                     // curveOffset: 10,
+                    currentRate: 0,
 
                 };
                 edges.push(edge);

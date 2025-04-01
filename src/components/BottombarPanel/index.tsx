@@ -63,25 +63,45 @@ const BottombarPanel = forwardRef<any, PropsWithChildren<any>>((props, ref) => {
       setIsPlaying(false);
     } else {
       // 如果未播放，启动定时器并将按钮文字改为暂停
+      //   intervalRef.current = setInterval(() => {
+      //     setPercent((prevPercent) => {
+      //       if (prevPercent < 100) {
+      //         const newPercent = prevPercent + 1;
+      //         setNow((prevNow) => prevNow + Math.floor((cycle_end - cycle_start) / 100));
+      //         if (now > cycle_end) {
+      //           setNow(cycle_end);
+      //         }
+      //         console.log("newPercent:", newPercent)
+      //         console.log('now:', now);
+      //         return newPercent;
+      //       } else {
+      //         setNow(cycle_end);
+      //         clearInterval(intervalRef.current);
+      //         setIsPlaying(false);
+      //         return prevPercent;
+      //       }
+      //     });
+      //   }, 100); // 每 100 毫秒增加 1% 进度
+      //   setIsPlaying(true);
+      // }
+
+
       intervalRef.current = setInterval(() => {
-        setPercent((prevPercent) => {
-          if (prevPercent < 100) {
-            const newPercent = prevPercent + 1;
-            setNow((prevNow) => prevNow + Math.floor((cycle_end - cycle_start) / 100));
-            if (now > cycle_end) {
-              setNow(cycle_end);
-            }
-            console.log("newPercent:", newPercent)
-            console.log('now:', now);
-            return newPercent;
+        setNow((prevNow) => {
+          if (prevNow < cycle_end) {
+            const newNow = prevNow + 1;
+            // setNow((prevNow) => prevNow + Math.floor((cycle_end - cycle_start) / 100));
+            setPercent((newNow - cycle_start) / (cycle_end - cycle_start));
+            console.log('next now:', newNow);
+            return newNow;
           } else {
-            setNow(cycle_end);
+            setPercent(100);
             clearInterval(intervalRef.current);
             setIsPlaying(false);
-            return prevPercent;
+            return prevNow;
           }
         });
-      }, 100); // 每 100 毫秒增加 1% 进度
+      }, 100); // 每 100 毫秒增加 1个cycle 进度
       setIsPlaying(true);
     }
   };
@@ -105,7 +125,7 @@ const BottombarPanel = forwardRef<any, PropsWithChildren<any>>((props, ref) => {
 
   useEffect(() => {
     // console.log('Adding event listeners');
-    console.log('now 更新后的值:', now);
+    // console.log('now 更新后的值:', now);
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
@@ -127,14 +147,14 @@ const BottombarPanel = forwardRef<any, PropsWithChildren<any>>((props, ref) => {
 
   const moveLeft = () => {
     if (percent > 0) {
-      setPercent(percent - 1 / (cycle_end - cycle_start));
+      setPercent(percent - 100 / (cycle_end - cycle_start));
       setNow(now - 1);
     }
   };
 
   const moveRight = () => {
     if (percent < 100) {
-      setPercent(percent + 1 / (cycle_end - cycle_start));
+      setPercent(percent + 100 / (cycle_end - cycle_start));
       setNow(now + 1);
     }
   };
