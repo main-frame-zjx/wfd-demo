@@ -91,7 +91,7 @@ const BottombarPanel = forwardRef<any, PropsWithChildren<any>>((props, ref) => {
           if (prevNow < cycle_end) {
             const newNow = prevNow + 1;
             // setNow((prevNow) => prevNow + Math.floor((cycle_end - cycle_start) / 100));
-            setPercent((newNow - cycle_start) / (cycle_end - cycle_start));
+            setPercent(100 * (newNow - cycle_start) / (cycle_end - cycle_start));
             console.log('next now:', newNow);
             return newNow;
           } else {

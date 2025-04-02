@@ -27,6 +27,12 @@ const FlowDetail: React.FC<FlowProps> = ({ model, onChange, readOnly = false, })
         </div>
 
         <div className={styles.panelRow}>
+          <Checkbox onChange={(e) => onChange('hideIcon', e.target.checked)}
+            disabled={readOnly}
+            checked={!!model.hideIcon}>隐藏port</Checkbox>
+        </div>
+
+        <div className={styles.panelRow}>
           <div>文件名：</div>
           <Input style={{ width: '100%', fontSize: 12 }}
             value={model.MxFileName}
