@@ -60,6 +60,13 @@ util:		各类js工具函数，数据处理函数
 
 对应文件：`wfd-demo\src\util\dumpAnalyse.js`
 
+readFileAsText(file)：读取dump文件中的内容
+
+analyseDumpFiles(files)：解析dump文件内容，取出有数据传输的cycle，并记录文件名（文件名包含了接口信息），cycle和文件名都记录在result中
+
+result_calc_rate(result)：对result中的记录按cycle进行排序，并计算传输速率，默认窗口为30
+
+calcPortTransferRate(cycle_id, dump_file_name, window_size)：输入cycle值、文件名、窗口大小，计算当前cycle当前接口的传输速率
 
 
 
