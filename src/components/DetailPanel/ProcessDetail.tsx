@@ -24,6 +24,21 @@ const ProcessDetail: React.FC<ProcessProps> = ({ model, onChange, readOnly = fal
     onChange('windowSize', validValue);
   };
 
+  const stepSizeOnChange = (e) => {
+    const validValue = Math.max(validateIntegerInput(e.target.value, 1), 1);
+    onChange('stepSize', validValue);
+  };
+
+  const fpsmaxOnChange = (e) => {
+    const validValue = Math.max(validateIntegerInput(e.target.value, 10), 1);
+    onChange('fpsmax', validValue);
+  };
+
+  // const fpsOnChange = (e) => {
+  //   const validValue = Math.max(validateIntegerInput(e.target.value, 10), 1);
+  //   onChange('fps', validValue);
+  // };
+
   return (
     <>
       <div data-clazz={model.clazz}>
@@ -53,6 +68,30 @@ const ProcessDetail: React.FC<ProcessProps> = ({ model, onChange, readOnly = fal
               disabled={readOnly}
             />
           </div>
+          <div className={styles.panelRow}>
+            <div>{i18n['process.stepSize']}：</div>
+            <Input style={{ width: '100%', fontSize: 12 }}
+              value={model.stepSize}
+              onChange={stepSizeOnChange}
+              disabled={readOnly}
+            />
+          </div>
+          <div className={styles.panelRow}>
+            <div>{i18n['process.fpsmax']}：</div>
+            <Input style={{ width: '100%', fontSize: 12 }}
+              value={model.fpsmax}
+              onChange={fpsmaxOnChange}
+              disabled={readOnly}
+            />
+          </div>
+          {/* <div className={styles.panelRow}>
+            <div>{i18n['process.fps']}：</div>
+            <Input style={{ width: '100%', fontSize: 12 }}
+              value={model.fps}
+              onChange={fpsOnChange}
+              disabled={true}
+            />
+          </div> */}
           <div className={styles.panelRow}>
             <div>{i18n['process.dpcId']}：</div>
             <Input style={{ width: '100%', fontSize: 12 }}

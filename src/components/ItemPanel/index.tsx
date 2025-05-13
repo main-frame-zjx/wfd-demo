@@ -1,7 +1,10 @@
-import React, { forwardRef, RefAttributes, useContext } from 'react';
+import React, { forwardRef, RefAttributes, useContext, useState } from 'react';
 import styles from "./index.less";
-import { Collapse } from "antd";
+import { Collapse, Modal, Input, message } from "antd";
 import 'antd/lib/collapse/style';
+import 'antd/lib/modal/style';
+import 'antd/lib/input/style';
+import 'antd/lib/button/style';
 import LangContext from "../../util/context";
 import CodeAnalyseTool from "../../util/codeAnalyse";
 import DumpAnalyseTool from "../../util/dumpAnalyse";
@@ -21,6 +24,14 @@ export interface ItemPanelProps {
 
 const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
      const { i18n } = useContext(LangContext);
+     const [token, setToken] = useState(localStorage.getItem('token') || '');
+     const [loadWorkspaceVisible, setLoadWorkspaceVisible] = useState(false);
+     const [visible, setVisible] = useState(false);
+     const [username, setUsername] = useState(
+          localStorage.getItem('username') || ''
+     );
+     const [succLogin, setSuccLogin] = useState(false);
+     const [password, setPassword] = useState('');
 
 
      const handleCodeUpload = (event) => {
@@ -43,14 +54,14 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
      };
 
 
-     const handleImportJson = (event) => {
-          const files = event.target.files;
-          if (files && files.length > 0 && window.ImportGraphDataFromJson) {
-               const file = files[0];
-               // CodeAnalyseTool.setTmpData(file);
-               window.ImportGraphDataFromJson(); // 调用导入 JSON 的方法
-          }
-     };
+     // const handleImportJson = (event) => {
+     //      const files = event.target.files;
+     //      if (files && files.length > 0 && window.ImportGraphDataFromJson) {
+     //           const file = files[0];
+     //           // CodeAnalyseTool.setTmpData(file);
+     //           window.ImportGraphDataFromJson(); // 调用导入 JSON 的方法
+     //      }
+     // };
 
 
      const handleDumpUpload = (event) => {
@@ -90,23 +101,310 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
      };
 
 
-     const handleExportJson = () => {
-          // 调用生成结构图的逻辑
-          if (CodeAnalyseTool.getSuccInitCodeInfo()) {
-               if (window.ExportGraphDataToJson) {
-                    window.ExportGraphDataToJson();
+     // const handleExportJson = () => {
+     //      // 调用生成结构图的逻辑
+     //      if (CodeAnalyseTool.getSuccInitCodeInfo()) {
+     //           if (window.ExportGraphDataToJson) {
+     //                window.ExportGraphDataToJson();
+     //           }
+     //      } else {
+     //           alert('Please upload code!');
+     //      }
+
+     // };
+
+     // ================== 检查工作区函数 ==================
+     const checkHasWorkspace = async () => {
+          try {
+               const response = await fetch(
+                    `http://localhost:5000/has_workspace?token=${token}`
+               );
+
+               if (response.ok) {
+                    const data = await response.json();
+                    return data.has_workspace;
+               } else {
+                    message.error('检查工作区失败: ' + (await response.text()));
+                    return false;
                }
-          } else {
-               alert('Please upload code!');
+          } catch (err) {
+               message.error('网络请求失败');
+               return false;
+          }
+     };
+     // ================== PDF下载逻辑 ==================
+     const handleDownloadIntro = () => {
+          if (!token) {
+               message.warning('请先登录');
+               return;
+          }
+          window.open(`http://localhost:5000/download/intro?token=${token}`);
+     };
+
+     const handleDownloadTechDoc = () => {
+          if (!token) {
+               message.warning('请先登录');
+               return;
+          }
+          window.open(`http://localhost:5000/download/tech-doc?token=${token}`);
+     };
+
+
+     // ================== 登录逻辑 ==================
+     const handleLogin = async () => {
+          try {
+               const formData = new FormData();
+               formData.append('username', username);
+               formData.append('password', password);
+
+               const response = await fetch('http://localhost:5000/login', {
+                    method: 'POST',
+                    body: formData
+               });
+
+               if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('username', username);
+                    setToken(data.token);
+                    message.success('登录成功');
+                    setSuccLogin(true);
+                    setVisible(false);
+
+
+                    // 检查是否有工作区
+                    const hasWorkspace = await checkHasWorkspace();
+                    if (hasWorkspace) {
+                         setLoadWorkspaceVisible(true);
+                    }
+               } else {
+                    message.error('登录失败: ' + (await response.text()));
+               }
+          } catch (err) {
+               message.error('网络请求失败');
+          }
+     };
+
+     // ================== 上传文件逻辑 ==================
+     const handleUpload = async () => {
+          if (!token) {
+               message.warning('请先登录');
+               return;
           }
 
+          // 创建临时文件对象
+          const temp_file = {
+               timestamp: new Date().toISOString(),
+               codePack: CodeAnalyseTool.pack2json(),
+               dumpPack: DumpAnalyseTool.pack2json()
+          };
+
+
+          var cache = [];
+          var json_str = JSON.stringify(temp_file, function (key, value) {
+               if (typeof value === 'object' && value !== null) {
+                    if (cache.indexOf(value) !== -1) {
+                         return;
+                    }
+                    cache.push(value);
+               }
+               return value;
+          });
+          cache = null;	//释放cache
+
+
+          // 生成JSON文件
+          const jsonBlob = new Blob([json_str], {
+               type: 'application/json'
+          });
+          const jsonFile = new File([jsonBlob], 'temp.json');
+
+          const formData = new FormData();
+          formData.append('token', token);
+          formData.append('file', jsonFile);
+
+          try {
+               const response = await fetch('http://localhost:5000/upload', {
+                    method: 'POST',
+                    body: formData
+               });
+
+               if (response.ok) {
+                    message.success('文件上传成功');
+               } else {
+                    message.error('上传失败: ' + (await response.text()));
+               }
+          } catch (err) {
+               message.error('上传请求失败');
+          }
      };
+
+     // ================== 下载文件逻辑 ==================
+     const handleDownload = async () => {
+          if (!token) {
+               message.warning('请先登录');
+               return;
+          }
+
+          try {
+               const response = await fetch(
+                    `http://localhost:5000/download?token=${token}`
+               );
+
+               if (response.ok) {
+                    // 从响应头获取文件名
+                    const contentDisposition = response.headers.get('Content-Disposition');
+                    let filename = 'latest_file.json';
+
+                    if (contentDisposition) {
+                         const filenameMatch = contentDisposition.match(/filename="?(.+?)"?(;|$)/);
+                         if (filenameMatch && filenameMatch[1]) {
+                              filename = filenameMatch[1];
+                         }
+                    }
+
+                    // 创建下载链接
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename; // 使用后端返回的真实文件名
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+
+                    message.success('文件下载成功');
+               } else {
+                    const errorText = await response.text();
+                    message.error(`下载失败: ${errorText}`);
+               }
+          } catch (err) {
+               message.error('下载请求失败');
+               console.error('Download error:', err);
+          }
+     };
+
+     // ================== 加载数据包逻辑 ==================
+     const handleLoadPack = async () => {
+          if (!token) {
+               message.warning('请先登录');
+               return;
+          }
+
+          try {
+               // 显示加载状态
+               message.loading({ content: '正在加载数据包...', key: 'loading' });
+
+               const response = await fetch(
+                    `http://localhost:5000/download_json?token=${token}`
+               );
+
+               if (response.ok) {
+                    const data = await response.json();
+
+                    // 处理获取的JSON数据（示例：更新状态或调用工具类）
+                    if (data.content) {
+                         // console.log(data.content);
+                         CodeAnalyseTool.loadFromPack(data.content.codePack || {});
+                         DumpAnalyseTool.loadFromPack(data.content.dumpPack || {});
+                         window.UpdateMinMaxCycle();
+                         window.UpdateGraph();
+                         message.success({ content: '数据包加载成功', key: 'loading' });
+
+                         // 可选：触发界面更新
+                         // if (window.UpdateGraphData) {
+                         //      window.UpdateGraphData(data.content);
+                         // }
+                    } else {
+                         message.error({ content: '数据包内容为空', key: 'loading' });
+                    }
+               } else {
+                    message.error({
+                         content: `加载失败: ${await response.text()}`,
+                         key: 'loading'
+                    });
+               }
+          } catch (err) {
+               message.error({
+                    content: '网络请求失败',
+                    key: 'loading'
+               });
+               console.error('Load pack error:', err);
+          }
+     };
+
+
+
+
+
 
      return (
           <div ref={ref} className={styles.itemPanel} style={{ height }}>
                <Collapse bordered={false} defaultActiveKey={[]}>
+                    <Panel header="账户操作" key="6" forceRender>
+                         <div style={{ marginTop: 10 }}>
+
+                              {!succLogin ? (
+                                   <button
+                                        className="btn-success"
+                                        onClick={() => setVisible(true)}
+                                   >
+                                        用户登录
+                                   </button>
+
+                              ) : (
+                                   <div
+                                        className="username-display"
+                                        aria-label="当前登录用户"  // 增强可访问性
+                                        title={`已登录用户: ${username}`}
+                                   >
+                                        用户：{username}
+                                   </div>
+
+                              )}
+
+
+                         </div>
+
+                         {/* 登录弹窗 */}
+                         <Modal
+                              title="登录"
+                              visible={visible}
+                              onOk={handleLogin}
+                              onCancel={() => setVisible(false)}
+                         >
+                              <Input
+                                   placeholder="用户名"
+                                   value={username}
+                                   onChange={(e) => setUsername(e.target.value)}
+                                   style={{ marginBottom: 10 }}
+                              />
+                              <Input.Password
+                                   placeholder="密码"
+                                   value={password}
+                                   onChange={(e) => setPassword(e.target.value)}
+                              />
+                         </Modal>
+
+                         {/* 工作区加载确认弹窗 */}
+                         <Modal
+                              title="工作区恢复"
+                              visible={loadWorkspaceVisible}
+                              onOk={() => {
+                                   handleLoadPack();
+                                   setLoadWorkspaceVisible(false);
+                              }}
+                              onCancel={() => setLoadWorkspaceVisible(false)}
+                              okText="加载"
+                              cancelText="取消"
+                         >
+                              <p>是否加载上次保存的工作区？</p>
+                         </Modal>
+                    </Panel>
                     <Panel header={i18n['start']} key="1" forceRender>
                          <div style={{ marginTop: 10 }}>
+
 
                               <label
                                    htmlFor="file-upload" // 关联 input 的 id
@@ -177,69 +475,68 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                          </div>
 
                     </Panel>
-                    <Panel header={i18n['gateway']} key="3" forceRender>
-                         {/* <img data-item="{clazz:'exclusiveGateway',size:'40*40',label:''}"
-                              src={require('../assets/flow/exclusive-gateway.svg')} style={{ width: 48, height: 48 }} />
-                         <div>{i18n['exclusiveGateway']}</div>
-                         <img data-item="{clazz:'parallelGateway',size:'40*40',label:''}"
-                              src={require('../assets/flow/parallel-gateway.svg')} style={{ width: 48, height: 48 }} />
-                         <div>{i18n['parallelGateway']}</div>
-                         <img data-item="{clazz:'inclusiveGateway',size:'40*40',label:''}"
-                              src={require('../assets/flow/inclusive-gateway.svg')} style={{ width: 48, height: 48 }} />
-                         <div>{i18n['inclusiveGateway']}</div> */}
-                    </Panel>
+
                     <Panel header={i18n['catch']} key="4" forceRender>
-                         {/* <img data-item={"{clazz:'timerCatch',size:'50*30',label:''}"}
-                              src={require('../assets/flow/timer-catch.svg')} style={{ width: 58, height: 38 }} />
-                         <div>{i18n['timerEvent']}</div>
-                         <img data-item={"{clazz:'messageCatch',size:'50*30',label:''}"}
-                              src={require('../assets/flow/message-catch.svg')} style={{ width: 58, height: 38 }} />
-                         <div>{i18n['messageEvent']}</div>
-                         <img data-item={"{clazz:'signalCatch',size:'50*30',label:''}"}
-                              src={require('../assets/flow/signal-catch.svg')} style={{ width: 58, height: 38 }} />
-                         <div>{i18n['signalEvent']}</div> */}
+
                     </Panel>
-                    <Panel header={i18n['end']} key="5" forceRender>
+                    <Panel header={i18n['workspace']} key="5" forceRender>
+                         <div style={{ marginTop: 10 }}>
+
+
+                              <button
+                                   className="btn-success"
+                                   onClick={handleUpload}
+                              >
+                                   上传工作区
+                              </button>
+
+                              <button
+                                   className="btn-warning"
+                                   onClick={handleDownload}
+                              >
+                                   下载到本地
+                              </button>
+
+                              <button
+                                   className="btn-info" // 新增样式类
+                                   onClick={handleLoadPack}
+                              >
+                                   加载工作区
+                              </button>
+                         </div>
+                    </Panel>
+                    <Panel header={i18n['pdfdownload']} key="7" forceRender>
                          <div style={{ marginTop: 10 }}>
                               <button
                                    style={{
-                                        display: 'inline-block',
+                                        display: 'block',
                                         marginBottom: 10,
                                         padding: '10px 20px',
-                                        backgroundColor: '#849b91',
+                                        backgroundColor: '#8a95a9',
                                         color: '#fff',
                                         borderRadius: '5px',
                                         cursor: 'pointer',
-                                        width: '90%',
+                                        width: '90%'
                                    }}
-                                   onClick={handleExportJson}
+                                   onClick={handleDownloadIntro}
                               >
-                                   下载workspace
+                                   项目介绍手册下载
                               </button>
-
-
-
-                              <label
-                                   htmlFor="json-upload" // 关联 input 的 id
+                              <button
                                    style={{
-                                        display: 'inline-block',
+                                        display: 'block',
                                         marginBottom: 10,
                                         padding: '10px 20px',
-                                        backgroundColor: '#849b91',
+                                        backgroundColor: '#8a95a9',
                                         color: '#fff',
                                         borderRadius: '5px',
                                         cursor: 'pointer',
-                                        width: '90%',
+                                        width: '90%'
                                    }}
+                                   onClick={handleDownloadTechDoc}
                               >
-                                   上传workspace
-                              </label>
-                              <input
-                                   id="json-upload"
-                                   type="file"
-                                   onChange={handleImportJson}
-                                   style={{ display: 'none' }} // 隐藏 input
-                              />
+                                   技术文档下载
+                              </button>
                          </div>
                     </Panel>
                </Collapse>

@@ -15,6 +15,12 @@ interface IProgressBarProps {
 
 }
 
+
+interface IBottombarPanelProps {
+  stepSize: number;
+  fpsmax: number;
+}
+
 declare global {
   interface Window {
     UpdateMinMaxCycle: () => void;
@@ -22,10 +28,16 @@ declare global {
 }
 
 
-const BottombarPanel = forwardRef<any, PropsWithChildren<any>>((props, ref) => {
+const BottombarPanel = forwardRef<any, PropsWithChildren<IBottombarPanelProps>>((props, ref) => {
   const { i18n } = useContext(LangContext);
   const [textStyle, setTextStyle] = useState<string>("progressTextCenter");
   const newColor = "#7ab3f4"; // 默认颜色
+
+  const startTimeRef = useRef(Date.now());
+  const tickCountRef = useRef(0);
+  const lastLogTickRef = useRef(0);  // 新增：记录最后统计时的触发次数
+  const intervalTimeRef = useRef(Math.max(1000 / props.fpsmax, 50));
+  const [realFPS, setRealFPS] = useState(0);
 
   const [percent, setPercent] = useState(0); // 当前进度值
   const [cycle_start, setcycle_start] = useState(0);
@@ -86,10 +98,31 @@ const BottombarPanel = forwardRef<any, PropsWithChildren<any>>((props, ref) => {
       // }
 
 
+      const intervalTime = intervalTimeRef.current; // 确保最小间隔50ms
+      const stepPerTick = props.stepSize;
+      startTimeRef.current = Date.now();
+      tickCountRef.current = 0;
+      lastLogTickRef.current = 0;
+
       intervalRef.current = setInterval(() => {
+        tickCountRef.current++;
+        // 每10次触发统计一次（网页5的优化思路）
+        if (tickCountRef.current % 10 === 0) {
+          const currentTime = Date.now();
+          const elapsedSeconds = (currentTime - startTimeRef.current) / 1000;
+          const currentFPS = (tickCountRef.current - lastLogTickRef.current) / elapsedSeconds;
+          //console.log(`Average FPS: ${currentFPS.toFixed(1)}`);
+          setRealFPS(parseFloat(currentFPS.toFixed(1)));
+
+
+          // 重置统计基准（网页3的状态保持方法）
+          lastLogTickRef.current = tickCountRef.current;
+          startTimeRef.current = currentTime;
+        }
+
         setNow((prevNow) => {
           if (prevNow < cycle_end) {
-            const newNow = prevNow + 1;
+            const newNow = prevNow + stepPerTick;
             // setNow((prevNow) => prevNow + Math.floor((cycle_end - cycle_start) / 100));
             setPercent(100 * (newNow - cycle_start) / (cycle_end - cycle_start));
             console.log('next now:', newNow);
@@ -101,7 +134,7 @@ const BottombarPanel = forwardRef<any, PropsWithChildren<any>>((props, ref) => {
             return prevNow;
           }
         });
-      }, 100); // 每 100 毫秒增加 1个cycle 进度
+      }, intervalTime); // 每 100 毫秒增加 1个cycle 进度
       setIsPlaying(true);
     }
   };
@@ -136,6 +169,10 @@ const BottombarPanel = forwardRef<any, PropsWithChildren<any>>((props, ref) => {
       document.removeEventListener('mouseup', handleMouseUp);
     };
   }, [now, percent]);
+
+  useEffect(() => {
+    intervalTimeRef.current = Math.max(1000 / props.fpsmax, 50);
+  }, [props.fpsmax]);
 
 
   // 新增 useEffect 监听 now 变化
@@ -190,6 +227,13 @@ const BottombarPanel = forwardRef<any, PropsWithChildren<any>>((props, ref) => {
           <div className={styles.right_icon} />
         </button>
       </div>
+
+      {/* 新增FPS显示区域 */}
+      {isPlaying && (
+        <div className={styles.fpsDisplay}>
+          FPS: {realFPS.toFixed(1)}
+        </div>
+      )}
 
     </div>
 

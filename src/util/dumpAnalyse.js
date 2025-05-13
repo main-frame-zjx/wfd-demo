@@ -198,7 +198,30 @@ const DumpAnalyseTool = {
   },
   getMaxCycle() {
     return maxCycle;
+  },
+
+
+  pack2json() {
+
+    return {
+      final_result: final_result,
+      filesToProcess: filesToProcess,
+      succInit: succInit,
+      cycleDict: cycleDict,
+      minCycle: minCycle,
+      maxCycle: maxCycle
+    };
+  },
+
+  loadFromPack(pack) {
+    final_result = pack.final_result;
+    filesToProcess = pack.filesToProcess;
+    succInit = pack.succInit;
+    cycleDict = pack.cycleDict;
+    minCycle = pack.minCycle;
+    maxCycle = pack.maxCycle;
   }
+
 };
 
 export default DumpAnalyseTool;

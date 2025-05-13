@@ -61,6 +61,9 @@ export interface IProcessModel extends IDefaultModel {
   signalDefs?: object[];
   messageDefs?: object[];
   windowSize?: number;
+  stepSize?: number;
+  fpsmax?: number;
+  fps?: number;
   dpcId?: number;
 }
 

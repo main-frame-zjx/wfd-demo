@@ -278,6 +278,10 @@ const CodeAnalyseTool = {
         return { nodes: nodes, edges: edges };
     },
 
+    getRenderData() {
+        return { nodes: renderInfo.data.nodes, edges: renderInfo.data.edges };
+    },
+
     updateRenderData(currentCycle) {
         renderInfo.data.edges.forEach(edge => {
             edge.color = this.calcColor(currentCycle);
@@ -378,6 +382,29 @@ const CodeAnalyseTool = {
         }
         return { drawModuleInstanceArray, drawPortInstanceArray, nodesId2Index }
     },
+
+    pack2json() {
+        return {
+            codeInfo: codeInfo,
+            succInitCodeInfo: succInitCodeInfo,
+            succInitRenderInfo: succInitRenderInfo,
+            renderInfo: renderInfo,
+        };
+    },
+
+    loadFromPack(pack) {
+        this.initCodeInfo();
+        if (pack.succInitCodeInfo) {
+            codeInfo = pack.codeInfo;
+            succInitCodeInfo = pack.succInitCodeInfo;
+        }
+        if (pack.succInitRenderInfo) {
+            succInitRenderInfo = pack.succInitRenderInfo;
+            renderInfo = pack.renderInfo;
+        }
+
+
+    }
 
 
 };

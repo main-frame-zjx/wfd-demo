@@ -26,6 +26,7 @@ registerBehavior(G6);
 declare global {
   interface Window {
     GenerateGraph: () => void;
+    UpdateGraph: () => void;
     ExportGraphDataToJson: () => void;
     ImportGraphDataFromJson: () => void;
     RefreshGraph: (currentCycle: number) => void;
@@ -97,6 +98,9 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
         signalDefs: [],
         messageDefs: [],
         windowSize: 20,
+        stepSize: 1,
+        fpsmax: 10,
+        fps: 0,
         dpcId: 0,
       },
     };
@@ -170,6 +174,14 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
 
   GenerateGraph = () => {
     let data = CodeAnalyseTool.initRenderInfo(0);
+    this.graph.data(data ? this.initShape(data) : { nodes: [], edges: [] });
+    this.graph.render();
+  }
+
+  UpdateGraph = () => {
+    // console.log('UpdateGraph');
+    let data = CodeAnalyseTool.getRenderData();
+    // console.log(data);
     this.graph.data(data ? this.initShape(data) : { nodes: [], edges: [] });
     this.graph.render();
   }
@@ -341,6 +353,7 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
     this.initEvents();
     // window.parent.setbottombarVisable = this.setbottombarVisable;
     window.GenerateGraph = this.GenerateGraph;
+    window.UpdateGraph = this.UpdateGraph;
     window.ExportGraphDataToJson = this.ExportGraphDataToJson;
     window.ImportGraphDataFromJson = this.ImportGraphDataFromJson;
     window.RefreshGraph = this.RefreshGraph;
@@ -452,7 +465,7 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
     const height = this.props.height;
     const { isView, mode, users, groups, lang } = this.props;
     const { selectedModel, processModel } = this.state;
-    const { signalDefs, messageDefs } = processModel;
+    const { signalDefs, messageDefs, stepSize, fpsmax } = processModel;
     const i18n = locale[lang.toLowerCase()];
     const readOnly = mode !== "edit";
 
@@ -475,7 +488,9 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
               onChange={(key, val) => { this.onItemCfgChange(key, val) }} />
             }
           </div>
-          {!isView && <BottombarPanel ref={this.bottombarRef} />}
+          {!isView && <BottombarPanel ref={this.bottombarRef}
+            stepSize={stepSize}
+            fpsmax={fpsmax} />}
         </div>
       </LangContext.Provider>
     );
