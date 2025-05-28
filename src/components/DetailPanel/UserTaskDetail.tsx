@@ -1,10 +1,11 @@
 import styles from "./index.less";
-import {Checkbox, DatePicker, Input, Select} from "antd";
-import React, {useContext} from "react";
+import { Checkbox, DatePicker, Input, Select } from "antd";
+import React, { useContext } from "react";
 import moment from "moment";
 import DefaultDetail from "./DefaultDetail";
 import LangContext from "../../util/context";
 import { ISelectData, IUserModel } from '../../types';
+import i18n from "../../util/zhcn";
 
 export interface UserProps {
   model: IUserModel;
@@ -13,8 +14,8 @@ export interface UserProps {
   users: ISelectData[];
   groups: ISelectData[];
 }
-const UserTaskDetail: React.FC<UserProps> = ({model,users,groups,onChange,readOnly = false,}) => {
-  const { i18n } = useContext(LangContext);
+const UserTaskDetail: React.FC<UserProps> = ({ model, users, groups, onChange, readOnly = false, }) => {
+  // const { i18n } = useContext(LangContext);
   const title = i18n['userTask'];
   return (
     <div data-clazz={model.clazz}>
@@ -24,7 +25,7 @@ const UserTaskDetail: React.FC<UserProps> = ({model,users,groups,onChange,readOn
         <div className={styles.panelRow}>
           <div>{i18n['userTask.assignType']}：</div>
           <Select
-            style={{width: '100%', fontSize: 12}}
+            style={{ width: '100%', fontSize: 12 }}
             placeholder={i18n['userTask.assignType.placeholder']}
             defaultValue={"person"}
             value={model.assignType}
@@ -46,7 +47,7 @@ const UserTaskDetail: React.FC<UserProps> = ({model,users,groups,onChange,readOn
             <Select
               mode="multiple"
               showSearch
-              style={{width: '100%', fontSize: 12}}
+              style={{ width: '100%', fontSize: 12 }}
               placeholder={i18n['userTask.assignType.person.placeholder']}
               optionFilterProp="children"
               defaultValue={model.assignValue}
@@ -65,7 +66,7 @@ const UserTaskDetail: React.FC<UserProps> = ({model,users,groups,onChange,readOn
             <Select
               mode="multiple"
               showSearch
-              style={{width: '100%', fontSize: 12}}
+              style={{ width: '100%', fontSize: 12 }}
               placeholder={i18n['userTask.assignType.persongroup.placeholder']}
               optionFilterProp="children"
               defaultValue={model.assignValue}
@@ -81,29 +82,29 @@ const UserTaskDetail: React.FC<UserProps> = ({model,users,groups,onChange,readOn
           model.assignType === 'custom' &&
           <div className={styles.panelRow}>
             <div>{i18n['userTask.assignType.custom.title']}：</div>
-            <Input style={{width: '100%', fontSize: 12}}
-                   value={model.javaClass}
-                   onChange={(e) => {
-                     onChange('javaClass', e.target.value)
-                   }}
-                   disabled={readOnly}
+            <Input style={{ width: '100%', fontSize: 12 }}
+              value={model.javaClass}
+              onChange={(e) => {
+                onChange('javaClass', e.target.value)
+              }}
+              disabled={readOnly}
             />
           </div>
         }
         <div className={styles.panelRow}>
-          <div style={{display: 'inline'}}>{i18n['userTask.dueDate']}：</div>
+          <div style={{ display: 'inline' }}>{i18n['userTask.dueDate']}：</div>
           <DatePicker defaultValue={model.dueDate ? moment(model.dueDate) : null}
-                      disabled={readOnly}
-                      placeholder={i18n['userTask.dueDate.placeholder']}
-                      showTime
-                      style={{width: '100%',minWidth:null}}
-                      onChange={(value, dateString) => onChange('dueDate', value)}
+            disabled={readOnly}
+            placeholder={i18n['userTask.dueDate.placeholder']}
+            showTime
+            style={{ width: '100%', minWidth: null }}
+            onChange={(value, dateString) => onChange('dueDate', value)}
           />
         </div>
         <div className={styles.panelRow}>
           <Checkbox onChange={(e) => onChange('isSequential', e.target.checked)}
-                    disabled={readOnly}
-                    checked={!!model.isSequential}>{i18n['userTask.counterSign']}</Checkbox>
+            disabled={readOnly}
+            checked={!!model.isSequential}>{i18n['userTask.counterSign']}</Checkbox>
         </div>
       </div>
     </div>

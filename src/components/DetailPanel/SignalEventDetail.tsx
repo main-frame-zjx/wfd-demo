@@ -1,9 +1,10 @@
 import styles from "./index.less";
 import { Select, } from "antd";
-import React, {useContext} from "react";
+import React, { useContext } from "react";
 import DefaultDetail from "./DefaultDetail";
 import LangContext from "../../util/context";
 import { ISelectData, ISignalModel } from '../../types';
+import i18n from "../../util/zhcn";
 
 export interface SignalProps {
   model: ISignalModel;
@@ -11,8 +12,8 @@ export interface SignalProps {
   readOnly: boolean;
   signalDefs: ISelectData[];
 }
-const SignalEventDetail: React.FC<SignalProps> = ({model,onChange,readOnly = false,signalDefs = []}) => {
-  const { i18n } = useContext(LangContext);
+const SignalEventDetail: React.FC<SignalProps> = ({ model, onChange, readOnly = false, signalDefs = [] }) => {
+  // const { i18n } = useContext(LangContext);
   const title = i18n['signalEvent'];
   return (
     <div data-clazz={model.clazz}>
@@ -22,7 +23,7 @@ const SignalEventDetail: React.FC<SignalProps> = ({model,onChange,readOnly = fal
         <div className={styles.panelRow}>
           <div>{i18n['signalEvent.signal']}：</div>
           <Select
-            style={{width: '100%', fontSize: 12}}
+            style={{ width: '100%', fontSize: 12 }}
             placeholder={i18n['signalEvent.signal']}
             defaultValue={model.signal}
             onChange={(e) => onChange('signal', e)}

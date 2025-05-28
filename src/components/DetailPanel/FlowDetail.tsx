@@ -4,6 +4,7 @@ import React, { useContext } from "react";
 import DefaultDetail from './DefaultDetail';
 import LangContext from "../../util/context";
 import { IFlowModel } from '../../types';
+import i18n from "../../util/zhcn";
 
 export interface FlowProps {
   model: IFlowModel;
@@ -11,7 +12,7 @@ export interface FlowProps {
   readOnly: boolean;
 }
 const FlowDetail: React.FC<FlowProps> = ({ model, onChange, readOnly = false, }) => {
-  const { i18n } = useContext(LangContext);
+  // const { i18n } = useContext(LangContext);
   const title = i18n['sequenceFlow'];
   return (
     <div data-clazz={model.clazz}>

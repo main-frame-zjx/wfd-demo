@@ -3,6 +3,7 @@ import { Checkbox, Input } from "antd";
 import React, { useContext } from "react";
 import LangContext from "../../util/context";
 import { IScriptModel } from '../../types';
+import i18n from "../../util/zhcn";
 
 export interface ScriptProps {
   model: IScriptModel;
@@ -10,7 +11,7 @@ export interface ScriptProps {
   readOnly: boolean;
 }
 const ScriptTaskDetail: React.FC<ScriptProps> = ({ model, onChange, readOnly = false, }) => {
-  const { i18n } = useContext(LangContext);
+  // const { i18n } = useContext(LangContext);
   const title = i18n['scriptTask'];
   return (
     <div data-clazz={model.clazz}>

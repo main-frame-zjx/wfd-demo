@@ -4,6 +4,7 @@ import React, { useContext, useState } from "react";
 import LangContext from "../../util/context";
 import DataTableModal from "./DataTableModal";
 import { IProcessModel } from '../../types';
+import i18n from "../../util/zhcn";
 
 export interface ProcessProps {
   model: IProcessModel;
@@ -11,7 +12,7 @@ export interface ProcessProps {
   readOnly: boolean;
 }
 const ProcessDetail: React.FC<ProcessProps> = ({ model, onChange, readOnly = false, }) => {
-  const { i18n, lang } = useContext(LangContext);
+  // const { i18n, lang } = useContext(LangContext);
 
   const validateIntegerInput = (value: string, defaultValue: number): number => {
     const parsed = parseInt(value, 10);

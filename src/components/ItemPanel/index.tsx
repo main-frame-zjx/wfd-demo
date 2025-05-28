@@ -9,6 +9,7 @@ import LangContext from "../../util/context";
 import CodeAnalyseTool from "../../util/codeAnalyse";
 import DumpAnalyseTool from "../../util/dumpAnalyse";
 // import { setbottombarVisible } from '../../index';
+import i18n from "../../util/zhcn";
 const { Panel } = Collapse;
 
 declare module 'react' {
@@ -23,15 +24,21 @@ export interface ItemPanelProps {
 }
 
 const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
-     const { i18n } = useContext(LangContext);
+     // const { i18n } = useContext(LangContext);
      const [token, setToken] = useState(localStorage.getItem('token') || '');
      const [loadWorkspaceVisible, setLoadWorkspaceVisible] = useState(false);
      const [visible, setVisible] = useState(false);
+     const [registerVisible, setRegisterVisible] = useState(false);
      const [username, setUsername] = useState(
           localStorage.getItem('username') || ''
      );
-     const [succLogin, setSuccLogin] = useState(false);
+     const [succLogin, setSuccLogin] = useState(localStorage.getItem('token') ? true : false);
      const [password, setPassword] = useState('');
+
+
+     const [reg_username, setRegUsername] = useState('');
+     const [reg_password, setRegPassword] = useState('');
+     const [reg_note, setRegNote] = useState('');
 
 
      const handleCodeUpload = (event) => {
@@ -114,10 +121,11 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
      // };
 
      // ================== 检查工作区函数 ==================
-     const checkHasWorkspace = async () => {
+     const checkHasWorkspace = async (tmp_token) => {
+          console.log('token', tmp_token);
           try {
                const response = await fetch(
-                    `http://localhost:5000/has_workspace?token=${token}`
+                    `http://localhost:5000/has_workspace?token=${tmp_token}`
                );
 
                if (response.ok) {
@@ -140,6 +148,17 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
           }
           window.open(`http://localhost:5000/download/intro?token=${token}`);
      };
+
+
+     const handleGotoIntro = () => {
+          if (!token) {
+               message.warning('请先登录');
+               return;
+          }
+          window.GotoIntroDocs();
+     };
+
+
 
      const handleDownloadTechDoc = () => {
           if (!token) {
@@ -167,20 +186,64 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('username', username);
                     setToken(data.token);
+                    // console.log('data.token', data.token);
                     message.success('登录成功');
                     setSuccLogin(true);
                     setVisible(false);
+                    console.log(data.role);
+                    if (data.role == 'admin') {
+                         console.log('GotoAdminPanel');
+                         window.GotoAdminPanel();
+                    }
 
 
                     // 检查是否有工作区
-                    const hasWorkspace = await checkHasWorkspace();
-                    if (hasWorkspace) {
-                         setLoadWorkspaceVisible(true);
+                    if (data.role == 'user') {
+                         const hasWorkspace = await checkHasWorkspace(data.token);
+                         if (hasWorkspace) {
+                              setLoadWorkspaceVisible(true);
+                         }
                     }
+
                } else {
                     message.error('登录失败: ' + (await response.text()));
                }
           } catch (err) {
+               console.log(err);
+               message.error('网络请求失败');
+          }
+     };
+
+     const handleLogout = () => {
+          localStorage.setItem('token', '');
+          localStorage.setItem('username', '');
+          setToken('');
+          message.success('退出登录');
+          setSuccLogin(false);
+     }
+
+
+     const handleRegister = async () => {
+          try {
+               const formData = new FormData();
+               formData.append('username', reg_username);
+               formData.append('password', reg_password);
+               formData.append('note', reg_note);
+
+               const response = await fetch('http://localhost:5000/register', {
+                    method: 'POST',
+                    body: formData
+               });
+
+               if (response.ok) {
+                    const data = await response.json();
+                    message.success('成功提交注册表，请等待管理员审批');
+                    setRegisterVisible(false);
+               } else {
+                    message.error('注册失败: ' + (await response.text()));
+               }
+          } catch (err) {
+               console.log(err);
                message.error('网络请求失败');
           }
      };
@@ -365,6 +428,25 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                               )}
 
 
+                              {!succLogin ? (
+                                   <button
+                                        className="btn-success"
+                                        onClick={() => setRegisterVisible(true)}
+                                   >
+                                        注册
+                                   </button>
+
+                              ) : (
+                                   <button
+                                        className="btn-success"
+                                        onClick={() => handleLogout()}
+                                   >
+                                        退出登录
+                                   </button>
+
+                              )}
+
+
                          </div>
 
                          {/* 登录弹窗 */}
@@ -384,6 +466,32 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                                    placeholder="密码"
                                    value={password}
                                    onChange={(e) => setPassword(e.target.value)}
+                              />
+                         </Modal>
+
+
+                         <Modal
+                              title="注册"
+                              visible={registerVisible}
+                              onOk={handleRegister}
+                              onCancel={() => setRegisterVisible(false)}
+                         >
+                              <Input
+                                   placeholder="用户名"
+                                   value={reg_username}
+                                   onChange={(e) => setRegUsername(e.target.value)}
+                                   style={{ marginBottom: 10 }}
+                              />
+                              <Input.Password
+                                   placeholder="密码"
+                                   value={reg_password}
+                                   onChange={(e) => setRegPassword(e.target.value)}
+                              />
+                              <Input
+                                   placeholder="备注"
+                                   value={reg_note}
+                                   onChange={(e) => setRegNote(e.target.value)}
+                                   style={{ marginBottom: 10 }}
                               />
                          </Modal>
 
@@ -507,7 +615,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                     </Panel>
                     <Panel header={i18n['pdfdownload']} key="7" forceRender>
                          <div style={{ marginTop: 10 }}>
-                              <button
+                              {/* <button
                                    style={{
                                         display: 'block',
                                         marginBottom: 10,
@@ -536,6 +644,22 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                                    onClick={handleDownloadTechDoc}
                               >
                                    技术文档下载
+                              </button> */}
+
+                              <button
+                                   style={{
+                                        display: 'block',
+                                        marginBottom: 10,
+                                        padding: '10px 20px',
+                                        backgroundColor: '#8a95a9',
+                                        color: '#fff',
+                                        borderRadius: '5px',
+                                        cursor: 'pointer',
+                                        width: '90%'
+                                   }}
+                                   onClick={handleGotoIntro}
+                              >
+                                   项目介绍
                               </button>
                          </div>
                     </Panel>

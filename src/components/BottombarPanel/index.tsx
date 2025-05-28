@@ -3,7 +3,7 @@ import '../../iconfont.css';
 import styles from "./index.less";
 import { Tooltip } from "antd";
 import 'antd/lib/tooltip/style';
-import LangContext from "../../util/context";
+import i18n from "../../util/zhcn";
 import DumpAnalyseTool from "../../util/dumpAnalyse";
 
 
@@ -29,7 +29,7 @@ declare global {
 
 
 const BottombarPanel = forwardRef<any, PropsWithChildren<IBottombarPanelProps>>((props, ref) => {
-  const { i18n } = useContext(LangContext);
+
   const [textStyle, setTextStyle] = useState<string>("progressTextCenter");
   const newColor = "#7ab3f4"; // 默认颜色
 

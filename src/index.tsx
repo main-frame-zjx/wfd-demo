@@ -19,6 +19,8 @@ import BottombarPanel from "./components/BottombarPanel";
 import registerShape from './shape'
 import registerBehavior from './behavior'
 import { IDefaultModel, IProcessModel, ISelectData } from './types';
+import { withRouter, RouteComponentProps } from 'react-router-dom';
+
 registerShape(G6);
 registerBehavior(G6);
 
@@ -30,10 +32,12 @@ declare global {
     ExportGraphDataToJson: () => void;
     ImportGraphDataFromJson: () => void;
     RefreshGraph: (currentCycle: number) => void;
+    GotoAdminPanel: () => void;
+    GotoIntroDocs: () => void;
   }
 }
 
-export interface DesignerProps {
+export interface DesignerProps extends RouteComponentProps {
   /** 画布高度 */
   height?: number;
   /** 是否只显示中间画布 */
@@ -43,7 +47,7 @@ export interface DesignerProps {
   /** 语言 */
   lang?: 'en' | 'zh';
   /** 流程数据 */
-  data: any;
+  data?: any;
   /** 审核人 */
   users?: ISelectData[];
   /** 审核组 */
@@ -64,13 +68,14 @@ export interface DesignerStates {
 // export{bottombarVisible,setbottombarVisible};
 
 
-export default class Designer extends React.Component<DesignerProps, DesignerStates> {
-  static defaultProps = {
+
+export class Designer extends React.Component<DesignerProps, DesignerStates> {
+  static defaultProps: Partial<DesignerProps> = {
     height: 500,
     isView: false,
     mode: 'edit',
     lang: 'zh',
-  };
+  } as Partial<DesignerProps>;
   private readonly pageRef: React.RefObject<any>;
   private readonly toolbarRef: React.RefObject<any>;
   private readonly bottombarRef: React.RefObject<any>;
@@ -105,6 +110,14 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
       },
     };
   }
+
+  GotoAdminPanel = () => {
+    this.props.history.push('/admin');
+  };
+
+  GotoIntroDocs = () => {
+    this.props.history.push('/intro');
+  };
 
 
   ExportGraphDataToJson = () => {
@@ -357,6 +370,8 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
     window.ExportGraphDataToJson = this.ExportGraphDataToJson;
     window.ImportGraphDataFromJson = this.ImportGraphDataFromJson;
     window.RefreshGraph = this.RefreshGraph;
+    window.GotoAdminPanel = this.GotoAdminPanel;
+    window.GotoIntroDocs = this.GotoIntroDocs;
   }
 
 
@@ -496,3 +511,8 @@ export default class Designer extends React.Component<DesignerProps, DesignerSta
     );
   }
 }
+
+export const WithRouterDesigner = withRouter(Designer);
+// export const WrappedDesigner = withRouter(Designer);
+export { AdminPanel } from './pages/AdminPanel';
+export { IntroPanel, withRouterIntroPanel } from './pages/IntroPanel'; 

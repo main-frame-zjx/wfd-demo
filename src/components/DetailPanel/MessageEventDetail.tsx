@@ -1,9 +1,10 @@
 import styles from "./index.less";
 import { Select, } from "antd";
-import React, {useContext} from "react";
+import React, { useContext } from "react";
 import DefaultDetail from "./DefaultDetail";
 import LangContext from "../../util/context";
 import { IMessageModel, ISelectData } from '../../types';
+import i18n from "../../util/zhcn";
 
 export interface MessageProps {
   model: IMessageModel;
@@ -11,8 +12,8 @@ export interface MessageProps {
   readOnly: boolean;
   messageDefs: ISelectData[];
 }
-const MessageEventDetail: React.FC<MessageProps> = ({model,onChange,readOnly = false,messageDefs = []}) => {
-  const { i18n } = useContext(LangContext);
+const MessageEventDetail: React.FC<MessageProps> = ({ model, onChange, readOnly = false, messageDefs = [] }) => {
+  // const { i18n } = useContext(LangContext);
   const title = i18n['signalEvent'];
   return (
     <div data-clazz={model.clazz}>
@@ -22,7 +23,7 @@ const MessageEventDetail: React.FC<MessageProps> = ({model,onChange,readOnly = f
         <div className={styles.panelRow}>
           <div>{i18n['messageEvent.message']}：</div>
           <Select
-            style={{width: '100%', fontSize: 12}}
+            style={{ width: '100%', fontSize: 12 }}
             placeholder={i18n['messageEvent.message']}
             defaultValue={model.message}
             onChange={(e) => onChange('message', e)}
