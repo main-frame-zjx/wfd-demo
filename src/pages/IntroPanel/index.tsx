@@ -40,12 +40,12 @@ const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => (
     </Markdown>
 );
 
+interface IntroPanelProps extends RouteComponentProps { }
 
-export const IntroPanel: React.FC = () => {
+export const IntroPanel: React.FC<IntroPanelProps> = ({ history, location }) => {
     const [content, setContent] = useState('');
     const [docType, setDocType] = useState<'intro' | 'tech'>('intro');
     const [loading, setLoading] = useState(false);
-    const history = useHistory();
 
     useEffect(() => {
         const controller = new AbortController();
@@ -69,7 +69,7 @@ export const IntroPanel: React.FC = () => {
                 setContent(jsonData.text);
 
                 console.log('文档加载成功');
-                console.log(jsonData.text);
+                //console.log(jsonData.text);
             } catch (error) {
                 if (!controller.signal.aborted) {
                     console.error('文档加载失败:', error);
@@ -118,4 +118,4 @@ export const IntroPanel: React.FC = () => {
     );
 };
 
-export const withRouterIntroPanel = withRouter(IntroPanel);
+// export const withRouterIntroPanel = withRouter(IntroPanel);
