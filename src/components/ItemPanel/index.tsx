@@ -125,7 +125,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
           console.log('token', tmp_token);
           try {
                const response = await fetch(
-                    `http://localhost:5000/has_workspace?token=${tmp_token}`
+                    `http://localhost:5001/has_workspace?token=${tmp_token}`
                );
 
                if (response.ok) {
@@ -133,9 +133,19 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                     return data.has_workspace;
                } else {
                     message.error('检查工作区失败: ' + (await response.text()));
-                    return false;
+                    if (response.status === 401) {
+                         console.log('身份过期');
+                         message.error('登录状态已过期，请重新登录');
+                         localStorage.removeItem('token');
+                         return false;
+                    }
+                    throw new Error(`HTTP错误: ${response.status}`);
                }
           } catch (err) {
+               if (err.response && err.response.status === 401) {
+                    console.log('身份过期'); // 在接口调用处明确打印
+                    message.error('登录状态已过期，请重新登录');
+               }
                message.error('网络请求失败');
                return false;
           }
@@ -146,13 +156,31 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                message.warning('请先登录');
                return;
           }
-          window.open(`http://localhost:5000/download/intro?token=${token}`);
+          window.open(`http://localhost:5001/download/intro?token=${token}`);
      };
 
 
      const handleGotoIntro = () => {
           if (!token) {
                message.warning('请先登录');
+               return;
+          }
+          // 新增：检查Token是否有效（调用已有的验证函数或新增验证逻辑）
+          try {
+          // 调用已有的checkHasWorkspace函数验证Token
+          // 注意：checkHasWorkspace是异步函数，需要处理Promise
+               const isTokenValid = checkHasWorkspace(token).then(hasWorkspace => {
+                    return hasWorkspace !== false; // 如果返回false，可能是Token过期
+               }).catch(() => false);
+               if (!isTokenValid) {
+                    message.error('登录状态已过期，请重新登录');
+                    localStorage.removeItem('token');
+                    setToken('');
+                    setSuccLogin(false);
+                    return;
+               }
+          } catch (error) {
+               message.error('Token验证失败，请重新登录');
                return;
           }
           window.GotoIntroDocs();
@@ -165,7 +193,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                message.warning('请先登录');
                return;
           }
-          window.open(`http://localhost:5000/download/tech-doc?token=${token}`);
+          window.open(`http://localhost:5001/download/tech-doc?token=${token}`);
      };
 
 
@@ -176,7 +204,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                formData.append('username', username);
                formData.append('password', password);
 
-               const response = await fetch('http://localhost:5000/login', {
+               const response = await fetch('http://localhost:5001/login', {
                     method: 'POST',
                     body: formData
                });
@@ -204,11 +232,26 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                               setLoadWorkspaceVisible(true);
                          }
                     }
-
                } else {
                     message.error('登录失败: ' + (await response.text()));
+                    if (response.status === 401) {
+                         console.log('身份过期');
+                         message.error('登录状态已过期，请重新登录');
+                         localStorage.removeItem('token');
+                         return false;
+                    }
+                    throw new Error(`HTTP错误: ${response.status}`);
                }
           } catch (err) {
+               if (err.response && err.response.status === 401) {
+                    localStorage.setItem('token', '');
+                    localStorage.setItem('username', '');
+                    setToken('');
+                    message.success('退出登录');
+                    setSuccLogin(false);
+                    console.log('身份过期'); // 在接口调用处明确打印
+                    message.error('登录状态已过期，请重新登录');
+               }
                console.log(err);
                message.error('网络请求失败');
           }
@@ -230,7 +273,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                formData.append('password', reg_password);
                formData.append('note', reg_note);
 
-               const response = await fetch('http://localhost:5000/register', {
+               const response = await fetch('http://localhost:5001/register', {
                     method: 'POST',
                     body: formData
                });
@@ -241,8 +284,24 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                     setRegisterVisible(false);
                } else {
                     message.error('注册失败: ' + (await response.text()));
+                    if (response.status === 401) {
+                         console.log('身份过期');
+                         message.error('登录状态已过期，请重新登录');
+                         localStorage.removeItem('token');
+                         return false;
+                    }
+                    throw new Error(`HTTP错误: ${response.status}`);
                }
           } catch (err) {
+               if (err.response && err.response.status === 401) {
+                    console.log('身份过期'); // 在接口调用处明确打印
+                    message.error('登录状态已过期，请重新登录');
+                    localStorage.setItem('token', '');
+                    localStorage.setItem('username', '');
+                    setToken('');
+                    message.success('退出登录');
+                    setSuccLogin(false);
+               }
                console.log(err);
                message.error('网络请求失败');
           }
@@ -287,7 +346,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
           formData.append('file', jsonFile);
 
           try {
-               const response = await fetch('http://localhost:5000/upload', {
+               const response = await fetch('http://localhost:5001/upload', {
                     method: 'POST',
                     body: formData
                });
@@ -296,8 +355,19 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                     message.success('文件上传成功');
                } else {
                     message.error('上传失败: ' + (await response.text()));
+                    if (response.status === 401) {
+                         console.log('身份过期');
+                         message.error('登录状态已过期，请重新登录');
+                         localStorage.removeItem('token');
+                         return false;
+                    }
+                    throw new Error(`HTTP错误: ${response.status}`);
                }
           } catch (err) {
+               if (err.response && err.response.status === 401) {
+                    console.log('身份过期'); // 在接口调用处明确打印
+                    message.error('登录状态已过期，请重新登录');
+               }
                message.error('上传请求失败');
           }
      };
@@ -311,7 +381,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
 
           try {
                const response = await fetch(
-                    `http://localhost:5000/download?token=${token}`
+                    `http://localhost:5001/download?token=${token}`
                );
 
                if (response.ok) {
@@ -341,8 +411,19 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                } else {
                     const errorText = await response.text();
                     message.error(`下载失败: ${errorText}`);
+                    if (response.status === 401) {
+                         console.log('身份过期');
+                         message.error('登录状态已过期，请重新登录');
+                         localStorage.removeItem('token');
+                         return false;
+                    }
+                    throw new Error(`HTTP错误: ${response.status}`);
                }
           } catch (err) {
+               if (err.response && err.response.status === 401) {
+                    console.log('身份过期'); // 在接口调用处明确打印
+                    message.error('登录状态已过期，请重新登录');
+               }
                message.error('下载请求失败');
                console.error('Download error:', err);
           }
@@ -360,7 +441,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                message.loading({ content: '正在加载数据包...', key: 'loading' });
 
                const response = await fetch(
-                    `http://localhost:5000/download_json?token=${token}`
+                    `http://localhost:5001/download_json?token=${token}`
                );
 
                if (response.ok) {
@@ -387,8 +468,19 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                          content: `加载失败: ${await response.text()}`,
                          key: 'loading'
                     });
+                    if (response.status === 401) {
+                         console.log('身份过期');
+                         message.error('登录状态已过期，请重新登录');
+                         localStorage.removeItem('token');
+                         return false;
+                    }
+                    throw new Error(`HTTP错误: ${response.status}`);
                }
           } catch (err) {
+               if (err.response && err.response.status === 401) {
+                    console.log('身份过期'); // 在接口调用处明确打印
+                    message.error('登录状态已过期，请重新登录');
+               }
                message.error({
                     content: '网络请求失败',
                     key: 'loading'

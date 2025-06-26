@@ -32,7 +32,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ history, location }) => 
             setLoading(true);
             const token = localStorage.getItem('token');
             const response = await fetch(
-                `http://localhost:5000/admin/registrations?approve=0&token=${token}`
+                `http://localhost:5001/admin/registrations?approve=0&token=${token}`
             );
 
             if (!response.ok) throw new Error('获取数据失败');
@@ -42,6 +42,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ history, location }) => 
                 id, username, note
             })));
         } catch (err) {
+            if (err.response && err.response.status === 401) {
+                    console.log('身份过期'); // 在接口调用处明确打印
+                    message.error('登录状态已过期，请重新登录');
+               }
             message.error('数据加载失败');
         } finally {
             setLoading(false);
@@ -53,7 +57,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ history, location }) => 
             setLoading(true);
             const token = localStorage.getItem('token');
             const response = await fetch(
-                `http://localhost:5000/admin/getUsers?token=${token}`
+                `http://localhost:5001/admin/getUsers?token=${token}`
             );
 
             if (!response.ok) throw new Error('获取数据失败');
@@ -63,6 +67,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ history, location }) => 
                 id, username, note, status, role
             })));
         } catch (err) {
+            if (err.response && err.response.status === 401) {
+                    console.log('身份过期'); // 在接口调用处明确打印
+                    message.error('登录状态已过期，请重新登录');
+               }
             message.error('数据加载失败');
         } finally {
             setLoading(false);
@@ -74,7 +82,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ history, location }) => 
         try {
             const token = localStorage.getItem('token');
             const response = await fetch(
-                `http://localhost:5000/admin/approve?id=${id}&token=${token}`
+                `http://localhost:5001/admin/approve?id=${id}&token=${token}`
             );
 
             if (!response.ok) throw new Error('操作失败');
@@ -83,6 +91,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ history, location }) => 
             fetchRegistrations(); // 刷新数据
             fetchUsers();
         } catch (err) {
+            if (err.response && err.response.status === 401) {
+                    console.log('身份过期'); // 在接口调用处明确打印
+                    message.error('登录状态已过期，请重新登录');
+               }
             message.error('操作失败');
         }
     };
@@ -90,7 +102,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ history, location }) => 
     const handleDisable = async (userId: number) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/admin/disable_user', {
+            const response = await fetch('http://localhost:5001/admin/disable_user', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -98,8 +110,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ history, location }) => 
                 },
                 body: new URLSearchParams({ user_id: userId.toString() })
             });
-
-
 
 
             const result = await response.json();
@@ -111,6 +121,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ history, location }) => 
             message.success(result.message);
             fetchUsers(); // 刷新用户列表
         } catch (error) {
+            if (error.response && error.response.status === 401) {
+                    console.log('身份过期'); // 在接口调用处明确打印
+                    message.error('登录状态已过期，请重新登录');
+               }
             message.error(error instanceof Error ? error.message : '未知错误');
         }
     };

@@ -515,4 +515,4 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
 export const WithRouterDesigner = withRouter(Designer);
 // export const WrappedDesigner = withRouter(Designer);
 export { AdminPanel } from './pages/AdminPanel';
-export { IntroPanel, withRouterIntroPanel } from './pages/IntroPanel'; 
+export { IntroPanel } from './pages/IntroPanel'; 
