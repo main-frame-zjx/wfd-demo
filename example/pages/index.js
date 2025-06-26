@@ -1,7 +1,7 @@
 import { WithRouterDesigner } from "../../dist";
 import React, { Component } from "react";
 import { Button, Modal, Dropdown, Menu } from 'antd'
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { HashRouter as Router, Switch, Route } from 'react-router-dom';
 import AdminPage from "./admin";
 import IntroPage from "./introPage";
 import 'antd/dist/antd.less'
