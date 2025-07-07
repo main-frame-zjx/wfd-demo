@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, Card, Table, Tabs, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { RouteComponentProps } from 'react-router-dom';
+import GlobalEnv from "../../util/globalEnv.js";
 
 interface Registration {
     id: number;
@@ -26,13 +27,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ history, location }) => 
     const [users, setUsers] = useState<Registration[]>([]);
     const [loading, setLoading] = useState(false);
 
+    const baseURL = GlobalEnv['api'];
+
     // 获取待审批注册表
     const fetchRegistrations = async () => {
         try {
             setLoading(true);
             const token = localStorage.getItem('token');
             const response = await fetch(
-                `http://localhost:5001/admin/registrations?approve=0&token=${token}`
+                `${baseURL}/admin/registrations?approve=0&token=${token}`
             );
 
             if (!response.ok) throw new Error('获取数据失败');
@@ -43,9 +46,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ history, location }) => 
             })));
         } catch (err) {
             if (err.response && err.response.status === 401) {
-                    console.log('身份过期'); // 在接口调用处明确打印
-                    message.error('登录状态已过期，请重新登录');
-               }
+                console.log('身份过期'); // 在接口调用处明确打印
+                message.error('登录状态已过期，请重新登录');
+            }
             message.error('数据加载失败');
         } finally {
             setLoading(false);
@@ -57,7 +60,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ history, location }) => 
             setLoading(true);
             const token = localStorage.getItem('token');
             const response = await fetch(
-                `http://localhost:5001/admin/getUsers?token=${token}`
+                `${baseURL}/admin/getUsers?token=${token}`
             );
 
             if (!response.ok) throw new Error('获取数据失败');
@@ -68,9 +71,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ history, location }) => 
             })));
         } catch (err) {
             if (err.response && err.response.status === 401) {
-                    console.log('身份过期'); // 在接口调用处明确打印
-                    message.error('登录状态已过期，请重新登录');
-               }
+                console.log('身份过期'); // 在接口调用处明确打印
+                message.error('登录状态已过期，请重新登录');
+            }
             message.error('数据加载失败');
         } finally {
             setLoading(false);
@@ -82,7 +85,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ history, location }) => 
         try {
             const token = localStorage.getItem('token');
             const response = await fetch(
-                `http://localhost:5001/admin/approve?id=${id}&token=${token}`
+                `${baseURL}/admin/approve?id=${id}&token=${token}`
             );
 
             if (!response.ok) throw new Error('操作失败');
@@ -92,9 +95,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ history, location }) => 
             fetchUsers();
         } catch (err) {
             if (err.response && err.response.status === 401) {
-                    console.log('身份过期'); // 在接口调用处明确打印
-                    message.error('登录状态已过期，请重新登录');
-               }
+                console.log('身份过期'); // 在接口调用处明确打印
+                message.error('登录状态已过期，请重新登录');
+            }
             message.error('操作失败');
         }
     };
@@ -102,7 +105,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ history, location }) => 
     const handleDisable = async (userId: number) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5001/admin/disable_user', {
+            const response = await fetch(`${baseURL}/admin/disable_user`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -122,9 +125,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ history, location }) => 
             fetchUsers(); // 刷新用户列表
         } catch (error) {
             if (error.response && error.response.status === 401) {
-                    console.log('身份过期'); // 在接口调用处明确打印
-                    message.error('登录状态已过期，请重新登录');
-               }
+                console.log('身份过期'); // 在接口调用处明确打印
+                message.error('登录状态已过期，请重新登录');
+            }
             message.error(error instanceof Error ? error.message : '未知错误');
         }
     };

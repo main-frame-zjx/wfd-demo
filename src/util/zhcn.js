@@ -45,7 +45,7 @@ const i18n = {
     'endEvent': '模块节点',
     'start': '上传文件',
     'workspace': '工作区',
-    'pdfdownload': '文档下载',
+    'pdfdownload': '文档查看',
     'gateway': '生成动态图',
     'exclusiveGateway': '排他网关',
     'parallelGateway': '并行网关',

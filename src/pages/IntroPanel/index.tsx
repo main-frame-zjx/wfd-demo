@@ -6,12 +6,12 @@ import Markdown from 'markdown-to-jsx';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { RouteComponentProps } from 'react-router-dom';
 import { Collapse, Modal, Input, message } from "antd";
-
+import GlobalEnv from "../../util/globalEnv.js";
 const { Option } = Select;
 const { Paragraph, Title } = Typography;
 
 // 本地开发时访问路径（基于webpack-dev-server）
-const DEV_BASE = 'http://localhost:5000/';
+const DEV_BASE = GlobalEnv['api'];
 
 const DOC_MAP = {
     intro: `${DEV_BASE}/getString/intro`, // 完整物理路径
@@ -59,11 +59,11 @@ export const IntroPanel: React.FC<IntroPanelProps> = ({ history, location }) => 
 
                 if (!response.ok) {
                     if (response.status === 401) {
-                         console.log('身份过期');
-                         localStorage.removeItem('token');
-                         
-                         // 阻止后续操作（关键！）
-                         throw new Error('身份过期，请重新登录');
+                        console.log('身份过期');
+                        localStorage.removeItem('token');
+
+                        // 阻止后续操作（关键！）
+                        throw new Error('身份过期，请重新登录');
                     }
                     throw new Error(`HTTP错误: ${response.status}`);
                 }

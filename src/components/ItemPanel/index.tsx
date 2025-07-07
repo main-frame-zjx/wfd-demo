@@ -9,6 +9,8 @@ import LangContext from "../../util/context";
 import CodeAnalyseTool from "../../util/codeAnalyse";
 import DumpAnalyseTool from "../../util/dumpAnalyse";
 // import { setbottombarVisible } from '../../index';
+import GlobalEnv from "../../util/globalEnv.js";
+
 import i18n from "../../util/zhcn";
 const { Panel } = Collapse;
 
@@ -39,6 +41,8 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
      const [reg_username, setRegUsername] = useState('');
      const [reg_password, setRegPassword] = useState('');
      const [reg_note, setRegNote] = useState('');
+
+     const baseURL = GlobalEnv['api'];
 
 
      const handleCodeUpload = (event) => {
@@ -125,7 +129,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
           console.log('token', tmp_token);
           try {
                const response = await fetch(
-                    `http://localhost:5001/has_workspace?token=${tmp_token}`
+                    `${baseURL}/has_workspace?token=${tmp_token}`
                );
 
                if (response.ok) {
@@ -156,7 +160,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                message.warning('请先登录');
                return;
           }
-          window.open(`http://localhost:5001/download/intro?token=${token}`);
+          window.open(`${baseURL}/download/intro?token=${token}`);
      };
 
 
@@ -167,8 +171,8 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
           }
           // 新增：检查Token是否有效（调用已有的验证函数或新增验证逻辑）
           try {
-          // 调用已有的checkHasWorkspace函数验证Token
-          // 注意：checkHasWorkspace是异步函数，需要处理Promise
+               // 调用已有的checkHasWorkspace函数验证Token
+               // 注意：checkHasWorkspace是异步函数，需要处理Promise
                const isTokenValid = checkHasWorkspace(token).then(hasWorkspace => {
                     return hasWorkspace !== false; // 如果返回false，可能是Token过期
                }).catch(() => false);
@@ -193,7 +197,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                message.warning('请先登录');
                return;
           }
-          window.open(`http://localhost:5001/download/tech-doc?token=${token}`);
+          window.open(`${baseURL}/download/tech-doc?token=${token}`);
      };
 
 
@@ -204,7 +208,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                formData.append('username', username);
                formData.append('password', password);
 
-               const response = await fetch('http://localhost:5001/login', {
+               const response = await fetch(`${baseURL}/login`, {
                     method: 'POST',
                     body: formData
                });
@@ -273,7 +277,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                formData.append('password', reg_password);
                formData.append('note', reg_note);
 
-               const response = await fetch('http://localhost:5001/register', {
+               const response = await fetch(`${baseURL}/register`, {
                     method: 'POST',
                     body: formData
                });
@@ -346,7 +350,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
           formData.append('file', jsonFile);
 
           try {
-               const response = await fetch('http://localhost:5001/upload', {
+               const response = await fetch(`${baseURL}/upload`, {
                     method: 'POST',
                     body: formData
                });
@@ -381,7 +385,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
 
           try {
                const response = await fetch(
-                    `http://localhost:5001/download?token=${token}`
+                    `${baseURL}/download?token=${token}`
                );
 
                if (response.ok) {
@@ -441,7 +445,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                message.loading({ content: '正在加载数据包...', key: 'loading' });
 
                const response = await fetch(
-                    `http://localhost:5001/download_json?token=${token}`
+                    `${baseURL}/download_json?token=${token}`
                );
 
                if (response.ok) {
