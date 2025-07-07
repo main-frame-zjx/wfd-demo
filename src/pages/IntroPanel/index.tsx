@@ -43,10 +43,11 @@ const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => (
 
 interface IntroPanelProps extends RouteComponentProps { }
 
-export const IntroPanel: React.FC<IntroPanelProps> = ({ history, location }) => {
+export const IntroPanel: React.FC<IntroPanelProps> = () => {
     const [content, setContent] = useState('');
     const [docType, setDocType] = useState<'intro' | 'tech'>('intro');
     const [loading, setLoading] = useState(false);
+    const history = useHistory();
 
     useEffect(() => {
         const controller = new AbortController();
@@ -131,4 +132,5 @@ export const IntroPanel: React.FC<IntroPanelProps> = ({ history, location }) => 
     );
 };
 
-// export const withRouterIntroPanel = withRouter(IntroPanel);
+
+//export default withRouter(IntroPanel);
