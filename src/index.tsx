@@ -34,6 +34,7 @@ declare global {
     RefreshGraph: (currentCycle: number) => void;
     GotoAdminPanel: () => void;
     GotoIntroDocs: () => void;
+    SwitchDpcId: (dpcId: number) => void;
   }
 }
 
@@ -107,6 +108,7 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
         fpsmax: 10,
         fps: 0,
         dpcId: 0,
+        currentCycle: 0,
       },
     };
   }
@@ -256,12 +258,29 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
     // return { stroke: `rgb(${r}, ${g}, ${b})` }
   }
 
+  SwitchDpcId = (dpcId: number) => {
+
+    if (dpcId >= 0 && dpcId < 4 && CodeAnalyseTool.getSuccInitRenderInfo()) {
+      console.log('try change dpcId to ', dpcId);
+      let data = CodeAnalyseTool.switchDpcId(dpcId);
+      this.graph.data(data ? this.initShape(data) : { nodes: [], edges: [] });
+      this.graph.render();
+      this.RefreshGraph(-1);
+    }
+
+  };
+
 
 
   RefreshGraph = (currentCycle: number) => {
+    if (currentCycle == -1) {
+      currentCycle = this.state.processModel.currentCycle;
+      console.log('currentCycle == -1, use last cycle ', currentCycle);
+    }
+    this.state.processModel.currentCycle = currentCycle;
     // // 根据当前周期更新图形数据
     if (CodeAnalyseTool.getSuccInitCodeInfo() && CodeAnalyseTool.getSuccInitRenderInfo() && DumpAnalyseTool.getSuccInit()) {
-      CodeAnalyseTool.updateRenderData(currentCycle);
+      // CodeAnalyseTool.updateRenderData(currentCycle);
       // let renderInfo = CodeAnalyseTool.getRenderInfo();
       // TODO: 渲染方案1，需要进行性能测试
       // if (this.graph) {
@@ -370,6 +389,7 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
     window.ExportGraphDataToJson = this.ExportGraphDataToJson;
     window.ImportGraphDataFromJson = this.ImportGraphDataFromJson;
     window.RefreshGraph = this.RefreshGraph;
+    window.SwitchDpcId = this.SwitchDpcId;
     window.GotoAdminPanel = this.GotoAdminPanel;
     window.GotoIntroDocs = this.GotoIntroDocs;
   }

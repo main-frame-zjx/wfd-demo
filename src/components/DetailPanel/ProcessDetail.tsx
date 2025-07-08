@@ -35,6 +35,12 @@ const ProcessDetail: React.FC<ProcessProps> = ({ model, onChange, readOnly = fal
     onChange('fpsmax', validValue);
   };
 
+  const dpcIdOnChange = (e) => {
+    const validValue = Math.min(Math.max(validateIntegerInput(e.target.value, 0), 0), 3);
+    onChange('dpcId', validValue);
+    window.SwitchDpcId(validValue);
+  };
+
   // const fpsOnChange = (e) => {
   //   const validValue = Math.max(validateIntegerInput(e.target.value, 10), 1);
   //   onChange('fps', validValue);
@@ -97,7 +103,7 @@ const ProcessDetail: React.FC<ProcessProps> = ({ model, onChange, readOnly = fal
             <div>{i18n['process.dpcId']}：</div>
             <Input style={{ width: '100%', fontSize: 12 }}
               value={model.dpcId}
-              onChange={(e) => onChange('dpcId', e.target.value)}
+              onChange={dpcIdOnChange}
               disabled={readOnly}
             />
           </div>

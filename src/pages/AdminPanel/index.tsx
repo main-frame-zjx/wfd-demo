@@ -4,6 +4,8 @@ import { Button, Card, Table, Tabs, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { RouteComponentProps } from 'react-router-dom';
 import GlobalEnv from "../../util/globalEnv.js";
+import { useHistory, withRouter } from 'react-router-dom';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 
 interface Registration {
     id: number;
@@ -22,10 +24,12 @@ interface MyUser {
 
 interface AdminPanelProps extends RouteComponentProps { }
 
-export const AdminPanel: React.FC<AdminPanelProps> = ({ history, location }) => {
+export const AdminPanel: React.FC<AdminPanelProps> = () => {
     const [registrations, setRegistrations] = useState<Registration[]>([]);
     const [users, setUsers] = useState<Registration[]>([]);
     const [loading, setLoading] = useState(false);
+
+    const history = useHistory();
 
     const baseURL = GlobalEnv['api'];
 
@@ -195,6 +199,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ history, location }) => 
 
     return (
         <div style={{ padding: 20 }}>
+            <div style={{ marginBottom: 20, display: 'flex', gap: 16 }}>
+                <Button
+                    type="primary"
+                    icon={<ArrowLeftOutlined />}
+                    onClick={() => history.push('/')}
+                >
+                    返回首页
+                </Button>
+            </div>
             <Card title="管理员控制台">
                 <Tabs defaultActiveKey="1">
                     <Tabs.TabPane tab="注册审批" key="1">

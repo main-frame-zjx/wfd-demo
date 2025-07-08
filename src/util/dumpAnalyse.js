@@ -175,18 +175,23 @@ const DumpAnalyseTool = {
   calcPortTransferRate(cycle_id, dump_file_name, window_size) {
     let num = 0;
     let fileName = 'fileName:' + dump_file_name;
-    // console.log(fileName);
+
     for (let cycle = cycle_id; cycle < cycle_id + window_size; cycle++) {
       if (cycle in cycleDict) {
-        // console.log('cycle:',cycle);
-        // console.log('cycleDict[cycle]:',cycleDict[cycle]);
-        for (let value of cycleDict[cycle]) {
-          // console.log('value',value);
-          if (fileName == value) {
-            // console.log('num:',num);
-            num++;
-          }
+
+        if (cycleDict[cycle].indexOf(fileName) == -1) {
+          // nothing to do
+        } else {
+          num++;
         }
+
+        // for (let value of cycleDict[cycle]) {
+        //   // console.log('value',value);
+        //   if (fileName == value) {
+        //     // console.log('num:',num);
+        //     num++;
+        //   }
+        // }
       }
     }
     // console.log('num',num);

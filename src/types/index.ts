@@ -65,6 +65,7 @@ export interface IProcessModel extends IDefaultModel {
   fpsmax?: number;
   fps?: number;
   dpcId?: number;
+  currentCycle?: number;
 }
 
 export interface ISelectData {

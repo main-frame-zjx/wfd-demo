@@ -77,6 +77,7 @@ const CodeAnalyseTool = {
         await this.readTxtInit(files);
     },
 
+    // 把module，moduleInstance，moduleInstanceArray进行读取和保存
     async readTxtInit(files) {
         if (files) {
 
@@ -231,6 +232,7 @@ const CodeAnalyseTool = {
 
             const { drawModuleInstanceArray, drawPortInstanceArray, nodesId2Index } = this.selectModuleInstanceAndPortToDraw(dpc_id);
 
+            // 这里分配给每个node的位置
             for (let i = 0; i < drawModuleInstanceArray.length; i++) {
                 let mi = drawModuleInstanceArray[i];
                 let mi_name = codeInfo.moduleArray[mi.mptr_id].module_type === "Single" ? mi.module_name : mi.module_name + '[' + mi.index.toString() + ']';
@@ -278,28 +280,61 @@ const CodeAnalyseTool = {
         return { nodes: nodes, edges: edges };
     },
 
+    switchDpcId(dpc_id) {
+        let nodes = renderInfo.data.nodes;
+        let edges = renderInfo.data.edges;
+
+        if (dpc_id >= 0 && dpc_id < 4 && succInitRenderInfo) {
+
+            const { drawModuleInstanceArray, drawPortInstanceArray, nodesId2Index } = this.selectModuleInstanceAndPortToDraw(dpc_id);
+
+            // 这里分配给每个node的位置
+            for (let i = 0; i < drawModuleInstanceArray.length; i++) {
+                let mi = drawModuleInstanceArray[i];
+                let mi_name = codeInfo.moduleArray[mi.mptr_id].module_type === "Single" ? mi.module_name : mi.module_name + '[' + mi.index.toString() + ']';
+                nodes[i].id = mi.mi_id.toString();
+                nodes[i].label = mi_name;
+            }
+
+            for (let i = 0; i < drawPortInstanceArray.length; i++) {
+                let pi = drawPortInstanceArray[i];
+                edges[i].source = pi.transmit_index.toString();
+                edges[i].target = pi.receive_index.toString();
+                edges[i].MxLabel = pi.name;
+                edges[i].MxFileName = pi.dump_file_name;
+
+            }
+            this.setPositionAndAnchor(nodes, edges, nodesId2Index, 900, 500);
+            // console.log('nodesId2Index', nodesId2Index);
+            renderInfo.nodesId2Index = nodesId2Index;
+        }
+
+        // console.log('renderInfo', renderInfo);
+        return { nodes: nodes, edges: edges };
+    },
+
     getRenderData() {
         return { nodes: renderInfo.data.nodes, edges: renderInfo.data.edges };
     },
 
-    updateRenderData(currentCycle) {
-        renderInfo.data.edges.forEach(edge => {
-            edge.color = this.calcColor(currentCycle);
-        });
-        // console.log(renderInfo.data.edges);
-    },
+    // updateRenderData(currentCycle) {
+    //     renderInfo.data.edges.forEach(edge => {
+    //         edge.color = this.calcColor(currentCycle);
+    //     });
+    //     // console.log(renderInfo.data.edges);
+    // },
 
-    calcColor(currentCycle) {
-        let minCycle = 8000;
-        let maxCycle = 11000;
-        // 计算归一化比例（0~1）
-        let ratio = (currentCycle - minCycle) / (maxCycle - minCycle);
-        ratio = Math.max(0, Math.min(1, ratio)); // 边界约束
+    // calcColor(currentCycle) {
+    //     let minCycle = 8000;
+    //     let maxCycle = 11000;
+    //     // 计算归一化比例（0~1）
+    //     let ratio = (currentCycle - minCycle) / (maxCycle - minCycle);
+    //     ratio = Math.max(0, Math.min(1, ratio)); // 边界约束
 
-        // 基于亮度线性映射的 RGB 计算
-        const brightness = Math.round(ratio * 255);
-        return `rgb(${brightness}, ${brightness}, ${brightness})`;
-    },
+    //     // 基于亮度线性映射的 RGB 计算
+    //     const brightness = Math.round(ratio * 255);
+    //     return `rgb(${brightness}, ${brightness}, ${brightness})`;
+    // },
 
     getRenderInfo() {
         return renderInfo;
