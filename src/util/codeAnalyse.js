@@ -246,7 +246,7 @@ const CodeAnalyseTool = {
                 };
                 nodes.push(node);
             }
-
+            const edgeGroups = {}; // 按源节点-目标节点分组
             for (let i = 0; i < drawPortInstanceArray.length; i++) {
                 let pi = drawPortInstanceArray[i];
                 let edge = {
@@ -261,10 +261,16 @@ const CodeAnalyseTool = {
                     // shape: 'cubic-vertical',
                     color: 'rgb(194, 207, 209)',
                     // label: pi.dump_file_name,
-                    // curveOffset: 10,
+                    curvePosition: 0.5,
+                    curveOffset: 30,
                     currentRate: 0,
 
                 };
+                const key = `${edge.source}-${edge.target}`;
+                edgeGroups[key] = edgeGroups[key] || [];
+                edgeGroups[key].push(edge);
+                const edgeGroupsLen = edgeGroups[key].length;
+                edge.curveOffset = edge.curveOffset * edgeGroupsLen;
                 edges.push(edge);
             }
             this.setPositionAndAnchor(nodes, edges, nodesId2Index, 900, 500);

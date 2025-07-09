@@ -47,7 +47,7 @@
 34 8 gff_module 2
 35 8 gff_module 3
 36 9 pGfdBlock 0
-20
+28
 0 GFD_GIA_draw_cmd_port[0] dpc0_gfd_gia_draw_cmd.model_vec 0 36
 1 GFD_GIA_draw_cmd_port[1] dpc1_gfd_gia_draw_cmd.model_vec 1 36
 2 GFD_GIA_draw_cmd_port[2] dpc2_gfd_gia_draw_cmd.model_vec 2 36
@@ -68,3 +68,11 @@
 17 VSD_HSD_draw_port[1] dpc1_vsd_hsd_draw.model_vec 9 5
 18 VSD_HSD_draw_port[2] dpc2_vsd_hsd_draw.model_vec 10 6
 19 VSD_HSD_draw_port[3] dpc3_vsd_hsd_draw.model_vec 11 7
+20 GIA_GFD_drawdown_port[0] dpc0_gia_gfd_drawdone.modelvec 36 0
+21 GIA_GFD_drawdown_port[1] dpc1_gia_gfd_drawdone.modelvec 36 1
+22 GIA_GFD_drawdown_port[2] dpc2_gia_gfd_drawdone.modelvec 36 2
+23 GIA_GFD_drawdown_port[3] dpc3_gia_gfd_drawdone.modelvec 36 3
+24 GIA_GFD_drawdown_port_cp[0] dpc0_gia_gfd_drawdone_cp.modelvec 36 0
+25 GIA_GFD_drawdown_port_cp[1] dpc1_gia_gfd_drawdone_cp.modelvec 36 1
+26 GIA_GFD_drawdown_port_cp[2] dpc2_gia_gfd_drawdone_cp.modelvec 36 2
+27 GIA_GFD_drawdown_port_cp[3] dpc3_gia_gfd_drawdone_cp.modelvec 36 3

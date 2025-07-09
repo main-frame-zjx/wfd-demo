@@ -198,6 +198,7 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
     let data = CodeAnalyseTool.getRenderData();
     // console.log(data);
     this.graph.data(data ? this.initShape(data) : { nodes: [], edges: [] });
+
     this.graph.render();
   }
 
@@ -309,6 +310,45 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
 
   };
 
+
+  // 更新边的控制点位置
+  // setEdgesControlPoints = () => {
+  //   console.log('enter setEdgesControlPoints');
+  //   const edges = this.graph.getEdges();
+  //   const edgeGroups = {}; // 按源节点-目标节点分组
+  //   const renderInfo = CodeAnalyseTool.getRenderInfo();
+  //   if (!renderInfo.nodesId2Index) {
+  //     console.log('error in setEdgesControlPoints');
+  //     return;
+  //   }
+
+  //   // 分组边
+  //   edges.forEach(edge => {
+  //     const source = edge.source;
+  //     const target = edge.target;
+  //     const key = `${source}-${target}`;
+  //     edgeGroups[key] = edgeGroups[key] || [];
+  //     edgeGroups[key].push(edge);
+  //   });
+
+  //   // 为每组边设置控制点
+  //   Object.keys(edgeGroups).forEach(key => {
+  //     const groupEdges = edgeGroups[key];
+  //     groupEdges.forEach((edge, j) => {
+
+  //       const baseOffset = 20; // 基础偏移量
+  //       const step = j;
+  //       const offsetValue = baseOffset * (step + 1);
+
+  //       // 设置控制点
+  //       this.graph.updateItem(edge, {
+  //         curvePosition: 0.5,
+  //         curveOffset: offsetValue
+  //       });
+  //     });
+  //   });
+  // };
+
   componentDidMount() {
     const { isView, mode } = this.props;
     const height = this.props.height - 1;
@@ -333,7 +373,6 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
             type: 'tooltip-edge',
             formatText: (model) => {
               var text = 'source: ' + model.source + '<br/> target: ' + model.target;
-              console.log('hello');
               return text;
             },
 
@@ -358,7 +397,8 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
       },
       defaultEdge: {
         // type: 'flow-polyline-round',
-        type: 'cubic-vertical',
+        // type: 'cubic-vertical',
+        type: 'quadratic',
         // type: 'arc',
         // type: 'smooth',
         style: {

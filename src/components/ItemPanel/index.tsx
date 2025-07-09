@@ -11,6 +11,10 @@ import DumpAnalyseTool from "../../util/dumpAnalyse";
 // import { setbottombarVisible } from '../../index';
 import GlobalEnv from "../../util/globalEnv.js";
 
+import { Table, Button } from 'antd'; // 添加Table和Button组件导入
+import { ColumnsType } from 'antd/es/table'; // 添加表格类型定义
+import { DownloadOutlined, UploadOutlined } from '@ant-design/icons'; // 添加图标
+
 import i18n from "../../util/zhcn";
 const { Panel } = Collapse;
 
@@ -42,7 +46,44 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
      const [reg_password, setRegPassword] = useState('');
      const [reg_note, setRegNote] = useState('');
 
+
+     const [workspaceModalVisible, setWorkspaceModalVisible] = useState(false);
+     const [workspaceList, setWorkspaceList] = useState<any[]>([]);
+     const [newWorkspaceName, setNewWorkspaceName] = useState('');
+
      const baseURL = GlobalEnv['api'];
+
+     const fetchWorkspaces = async () => {
+          try {
+               const response = await fetch(`${baseURL}/get_workspace?token=${token}`);
+               if (response.ok) {
+                    const data = await response.json();
+                    setWorkspaceList(data.files);
+               } else {
+                    message.error('获取工作区列表失败: ' + (await response.text()));
+               }
+          } catch (err) {
+               message.error('网络请求失败');
+          }
+     };
+
+
+     const handleWorkspaceOverwrite = (filename: string) => {
+          Modal.confirm({
+               title: '确认覆盖',
+               content: `确定要覆盖 "${filename}" 工作区吗？`,
+               onOk: () => {
+                    // 这里添加实际覆盖逻辑
+                    handleUploadWorkspace(filename, true);
+
+               }
+          });
+     };
+
+     const handleDownloadWorkspace = (filepath: string, filename: string) => {
+          // 这里添加实际下载逻辑
+          message.info(`正在下载: ${filename}`);
+     };
 
 
      const handleCodeUpload = (event) => {
@@ -173,9 +214,11 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
           try {
                // 调用已有的checkHasWorkspace函数验证Token
                // 注意：checkHasWorkspace是异步函数，需要处理Promise
-               const isTokenValid = checkHasWorkspace(token).then(hasWorkspace => {
-                    return hasWorkspace !== false; // 如果返回false，可能是Token过期
-               }).catch(() => false);
+               // const isTokenValid = checkHasWorkspace(token).then(hasWorkspace => {
+               //      return hasWorkspace !== false; // 如果返回false，可能是Token过期
+               // }).catch(() => false);
+
+               const isTokenValid = true;
                if (!isTokenValid) {
                     message.error('登录状态已过期，请重新登录');
                     localStorage.removeItem('token');
@@ -231,7 +274,8 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
 
                     // 检查是否有工作区
                     if (data.role == 'user') {
-                         const hasWorkspace = await checkHasWorkspace(data.token);
+                         // const hasWorkspace = await checkHasWorkspace(data.token);
+                         const hasWorkspace = true;
                          if (hasWorkspace) {
                               setLoadWorkspaceVisible(true);
                          }
@@ -312,7 +356,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
      };
 
      // ================== 上传文件逻辑 ==================
-     const handleUpload = async () => {
+     const handleUploadWorkspace = async (workspaceName: string, overwrite: boolean) => {
           if (!token) {
                message.warning('请先登录');
                return;
@@ -348,15 +392,18 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
           const formData = new FormData();
           formData.append('token', token);
           formData.append('file', jsonFile);
+          formData.append('filename', workspaceName);
 
           try {
-               const response = await fetch(`${baseURL}/upload`, {
+               const url = overwrite ? 'overwriteWorkspace' : 'uploadWorkspace'
+               const response = await fetch(`${baseURL}/${url}`, {
                     method: 'POST',
                     body: formData
                });
 
                if (response.ok) {
                     message.success('文件上传成功');
+                    setWorkspaceModalVisible(false); // 关闭弹窗
                } else {
                     message.error('上传失败: ' + (await response.text()));
                     if (response.status === 401) {
@@ -605,6 +652,77 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                          >
                               <p>是否加载上次保存的工作区？</p>
                          </Modal>
+
+
+
+                         <Modal
+                              title="工作区管理"
+                              visible={workspaceModalVisible}
+                              onCancel={() => setWorkspaceModalVisible(false)}
+                              footer={null}
+                              width={800}
+                         >
+                              <Table
+                                   dataSource={workspaceList}
+                                   columns={[
+                                        {
+                                             title: '文件名',
+                                             dataIndex: 'filename',
+                                             key: 'filename'
+                                        },
+                                        {
+                                             title: '上传时间',
+                                             dataIndex: 'uploaded_at',
+                                             key: 'uploaded_at'
+                                        },
+                                        {
+                                             title: '操作',
+                                             key: 'action',
+                                             render: (_, record) => (
+                                                  <div>
+                                                       <Button
+                                                            type="primary"
+                                                            icon={<UploadOutlined />}
+                                                            onClick={() => handleWorkspaceOverwrite(record.filename)}
+                                                            style={{ marginRight: 8 }}
+                                                       >
+                                                            覆盖
+                                                       </Button>
+                                                       <Button
+                                                            type="default"
+                                                            icon={<DownloadOutlined />}
+                                                            onClick={() => handleDownloadWorkspace(record.filepath, record.filename)}
+                                                       >
+                                                            下载
+                                                       </Button>
+                                                  </div>
+                                             )
+                                        }
+                                   ]}
+                                   pagination={false}
+                                   rowKey="id"
+                                   style={{ marginBottom: 16 }}
+                              />
+
+                              <div style={{ display: 'flex', marginTop: 16 }}>
+                                   <Input
+                                        placeholder="输入工作区名称"
+                                        value={newWorkspaceName}
+                                        onChange={(e) => setNewWorkspaceName(e.target.value)}
+                                        style={{ flex: 1, marginRight: 8 }}
+                                   />
+                                   <Button
+                                        type="primary"
+                                        onClick={() => {
+                                             const name = newWorkspaceName || 'temp_workspace';
+                                             handleUploadWorkspace(name, false);
+                                             setNewWorkspaceName('');
+                                        }}
+                                   >
+                                        上传新工作区
+                                   </Button>
+                              </div>
+                         </Modal>
                     </Panel>
                     <Panel header={i18n['start']} key="1" forceRender>
                          <div style={{ marginTop: 10 }}>
@@ -685,27 +803,23 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                     </Panel>
                     <Panel header={i18n['workspace']} key="5" forceRender>
                          <div style={{ marginTop: 10 }}>
-
-
                               <button
-                                   className="btn-success"
-                                   onClick={handleUpload}
+                                   style={{
+                                        display: 'block',
+                                        marginBottom: 10,
+                                        padding: '10px 20px',
+                                        backgroundColor: '#8a95a9',
+                                        color: '#fff',
+                                        borderRadius: '5px',
+                                        cursor: 'pointer',
+                                        width: '90%'
+                                   }}
+                                   onClick={() => {
+                                        setWorkspaceModalVisible(true);
+                                        fetchWorkspaces();
+                                   }}
                               >
-                                   上传工作区
-                              </button>
-
-                              <button
-                                   className="btn-warning"
-                                   onClick={handleDownload}
-                              >
-                                   下载到本地
-                              </button>
-
-                              <button
-                                   className="btn-info" // 新增样式类
-                                   onClick={handleLoadPack}
-                              >
-                                   加载工作区
+                                   管理工作区
                               </button>
                          </div>
                     </Panel>
