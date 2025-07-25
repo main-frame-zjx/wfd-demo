@@ -48,8 +48,13 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
 
 
      const [workspaceModalVisible, setWorkspaceModalVisible] = useState(false);
+     const [blockEdgeModalVisible, setBlockEdgeModalVisible] = useState(false);
      const [workspaceList, setWorkspaceList] = useState<any[]>([]);
+     const [blockEdgeList, setBlockEdgeList] = useState<any[]>([]);
      const [newWorkspaceName, setNewWorkspaceName] = useState('');
+     const [blockCycleStart, setBlockCycleStart] = useState(0);
+     const [blockCycleEnd, setBlockCycleEnd] = useState(11185);
+     const [blockParam, setBlockParam] = useState(1);
 
      const baseURL = GlobalEnv['api'];
 
@@ -164,6 +169,12 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
      //      }
 
      // };
+
+     const fetchBlockEdge = () => {
+
+          let edgelist = CodeAnalyseTool.getBlockEdgeList();
+          setBlockEdgeList(edgelist);
+     }
 
      // ================== 检查工作区函数 ==================
      const checkHasWorkspace = async (tmp_token) => {
@@ -312,6 +323,11 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
           message.success('退出登录');
           setSuccLogin(false);
      }
+
+     const validateIntegerInput = (value: string, defaultValue: number): number => {
+          const parsed = parseInt(value, 10);
+          return isNaN(parsed) ? defaultValue : parsed;
+     };
 
 
      const handleRegister = async () => {
@@ -723,6 +739,118 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                                    </Button>
                               </div>
                          </Modal>
+
+
+
+
+
+                         <Modal
+                              title="筛选阻塞边"
+                              visible={blockEdgeModalVisible}
+                              onCancel={() => setBlockEdgeModalVisible(false)}
+                              footer={null}
+                              width={800}
+                         >
+                              <Table
+                                   dataSource={blockEdgeList}
+                                   columns={[
+                                        {
+                                             title: 'Port ID',
+                                             dataIndex: 'pi_id',
+                                             key: 'pi_id'
+                                        },
+                                        {
+                                             title: 'Port变量名',
+                                             dataIndex: 'name',
+                                             key: 'name'
+                                        },
+                                        {
+                                             title: 'Port文件名',
+                                             dataIndex: 'dump_file_name',
+                                             key: 'dump_file_name'
+                                        },
+                                        {
+                                             title: '阻塞周期',
+                                             dataIndex: 'blockNum',
+                                             key: 'blockNum'
+                                        },
+
+                                   ]}
+                                   pagination={{
+                                        pageSize: 10, // 新增：每页显示10条数据
+                                        showSizeChanger: false,
+                                        showQuickJumper: true,
+                                   }}
+                                   rowKey="id"
+                                   style={{ marginBottom: 16 }}
+                              />
+
+                              <div style={{ display: 'flex', marginTop: 16 }}>
+                                   {/* <Input
+                                        placeholder="输入筛选起点"
+                                        value={blockCycleStart}
+                                        onChange={(e) => setBlockCycleStart(validateIntegerInput(e.target.value, blockCycleStart))}
+                                        style={{ flex: 1, marginRight: 8 }}
+                                   />
+
+                                   <Input
+                                        placeholder="输入筛选终点"
+                                        value={blockCycleEnd}
+                                        onChange={(e) => setBlockCycleEnd(validateIntegerInput(e.target.value, blockCycleEnd))}
+                                        style={{ flex: 1, marginRight: 8 }}
+                                   />
+
+                                   <Input
+                                        placeholder="输入堵塞阈值"
+                                        value={blockParam}
+                                        onChange={(e) => setBlockParam(validateIntegerInput(e.target.value, blockParam))}
+                                        style={{ flex: 1, marginRight: 8 }}
+                                   /> */}
+
+                                   <div style={{ flex: 1, marginRight: 8 }}>
+                                        <span>输入筛选起点:</span>
+                                        <Input
+                                             placeholder="输入筛选起点"
+                                             value={blockCycleStart}
+                                             onChange={(e) => setBlockCycleStart(validateIntegerInput(e.target.value, blockCycleStart))}
+                                             style={{ width: '100%' }}
+                                        />
+                                   </div>
+
+                                   <div style={{ flex: 1, marginRight: 8 }}>
+                                        <span>输入筛选终点:</span>
+                                        <Input
+                                             placeholder="输入筛选终点"
+                                             value={blockCycleEnd}
+                                             onChange={(e) => setBlockCycleEnd(validateIntegerInput(e.target.value, blockCycleEnd))}
+                                             style={{ width: '100%' }}
+                                        />
+                                   </div>
+
+                                   <div style={{ flex: 1, marginRight: 8 }}>
+                                        <span>输入阻塞阈值:</span>
+                                        <Input
+                                             placeholder="输入阻塞阈值"
+                                             value={blockParam}
+                                             onChange={(e) => setBlockParam(validateIntegerInput(e.target.value, blockParam))}
+                                             style={{ width: '100%' }}
+                                        />
+                                   </div>
+
+
+                                   <Button
+                                        type="primary"
+                                        onClick={() => {
+                                             // const name = newWorkspaceName || 'temp_workspace';
+                                             // handleUploadWorkspace(name, false);
+                                             // setNewWorkspaceName('');
+                                        }}
+                                   >
+                                        筛选
+                                   </Button>
+
+                              </div>
+                         </Modal>
                     </Panel>
                     <Panel header={i18n['start']} key="1" forceRender>
                          <div style={{ marginTop: 10 }}>
@@ -799,7 +927,26 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                     </Panel>
 
                     <Panel header={i18n['catch']} key="4" forceRender>
-
+                         <div style={{ marginTop: 10 }}>
+                              <button
+                                   style={{
+                                        display: 'block',
+                                        marginBottom: 10,
+                                        padding: '10px 20px',
+                                        backgroundColor: '#8a95a9',
+                                        color: '#fff',
+                                        borderRadius: '5px',
+                                        cursor: 'pointer',
+                                        width: '90%'
+                                   }}
+                                   onClick={() => {
+                                        fetchBlockEdge();
+                                        setBlockEdgeModalVisible(true);
+                                   }}
+                              >
+                                   筛选堵塞边
+                              </button>
+                         </div>
                     </Panel>
                     <Panel header={i18n['workspace']} key="5" forceRender>
                          <div style={{ marginTop: 10 }}>
@@ -825,36 +972,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                     </Panel>
                     <Panel header={i18n['pdfdownload']} key="7" forceRender>
                          <div style={{ marginTop: 10 }}>
-                              {/* <button
-                                   style={{
-                                        display: 'block',
-                                        marginBottom: 10,
-                                        padding: '10px 20px',
-                                        backgroundColor: '#8a95a9',
-                                        color: '#fff',
-                                        borderRadius: '5px',
-                                        cursor: 'pointer',
-                                        width: '90%'
-                                   }}
-                                   onClick={handleDownloadIntro}
-                              >
-                                   项目介绍手册下载
-                              </button>
-                              <button
-                                   style={{
-                                        display: 'block',
-                                        marginBottom: 10,
-                                        padding: '10px 20px',
-                                        backgroundColor: '#8a95a9',
-                                        color: '#fff',
-                                        borderRadius: '5px',
-                                        cursor: 'pointer',
-                                        width: '90%'
-                                   }}
-                                   onClick={handleDownloadTechDoc}
-                              >
-                                   技术文档下载
-                              </button> */}
+
 
                               <button
                                    style={{

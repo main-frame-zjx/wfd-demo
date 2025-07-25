@@ -22,6 +22,7 @@ class RenderInfo {
             edges: [],
         };
         this.nodesId2Index = {};
+        this.combinedEdges = [];
     }
 }
 
@@ -44,6 +45,8 @@ class MxModuleInstance {
     }
 }
 
+
+
 class MxPortInstance {
     constructor(pi_id, name, dump_file_name, receive_index, transmit_index) {
         this.pi_id = pi_id;
@@ -51,6 +54,17 @@ class MxPortInstance {
         this.dump_file_name = dump_file_name;
         this.receive_index = receive_index;
         this.transmit_index = transmit_index;
+    }
+}
+
+
+class CombinedEdge {
+    constructor(edgeProperty, source, target, fileNameArray, portInstanceIndexArray) {
+        this.edgeProperty = edgeProperty;
+        this.source = source;
+        this.target = target;
+        this.fileNameArray = fileNameArray;
+        this.portInstanceIndexArray = portInstanceIndexArray;
     }
 }
 
@@ -279,11 +293,108 @@ const CodeAnalyseTool = {
             renderInfo.data.edges = edges;
             renderInfo.nodesId2Index = nodesId2Index;
         }
-
-
-        console.log('renderInfo', renderInfo);
         succInitRenderInfo = true;
+        this.switchEdgeSet(dpc_id, false);
+        console.log('renderInfo', renderInfo);
+
         return { nodes: nodes, edges: edges };
+    },
+
+    getEdgeSetDrawData() {
+        let nodes = renderInfo.data.nodes;
+        let edges = [];
+        for (let i = 0; i < renderInfo.combinedEdges.length; i++) {
+            edges.push(renderInfo.combinedEdges[i].edgeProperty);
+        }
+
+        return { nodes: nodes, edges: edges };
+    },
+
+    getNormalEdgeDrawData() {
+        let nodes = renderInfo.data.nodes;
+        let edges = renderInfo.data.edges;
+        return { nodes: nodes, edges: edges };
+    },
+
+    switchEdgeSet(dpc_id, ignore_dpc_id = false) {
+        let combinedEdges = [];
+        const edgeGroups = {}; // 按源节点-目标节点分组
+        const edgeGroups2Index = {}; // 按源节点-目标节点找到对应的combinedEdge
+        if (ignore_dpc_id) {
+            return;
+        }
+        if (dpc_id < 0 || dpc_id >= 4 || !succInitRenderInfo) {
+            return;
+        }
+
+
+
+        const { drawModuleInstanceArray, drawPortInstanceArray, nodesId2Index } = this.selectModuleInstanceAndPortToDraw(dpc_id);
+
+        for (let i = 0; i < drawPortInstanceArray.length; i++) {
+            let pi = drawPortInstanceArray[i];
+            let edge = {
+                source: pi.transmit_index.toString(),
+                target: pi.receive_index.toString(),
+                sourceAnchor: 0,
+                targetAnchor: 1,
+                clazz: 'combinedEdge',
+                MxLabel: pi.name,
+                MxFileName: pi.dump_file_name,
+                //shape: 'arc',
+                // shape: 'cubic-vertical',
+                color: 'rgb(194, 207, 209)',
+                // label: pi.dump_file_name,
+                curvePosition: 0.5,
+                curveOffset: 30,
+                currentRate: [0],
+                fileNameArray: [pi.dump_file_name],
+                portInstanceIndexArray: [pi.pi_id],
+                useMaxCalcRate: false
+            };
+            const key = `${edge.source}-${edge.target}`;
+            edgeGroups[key] = edgeGroups[key] || [];
+            edgeGroups[key].push(edge);
+            const edgeGroupsLen = edgeGroups[key].length;
+            edge.curveOffset = edge.curveOffset * edgeGroupsLen;
+            if (edgeGroupsLen == 1) {
+
+                let fileNameArray = [edge.MxFileName];
+                let portInstanceIndexArray = [pi.pi_id];
+                let combinedEdge = new CombinedEdge(edge, edge.source, edge.target, fileNameArray, portInstanceIndexArray);
+                edgeGroups2Index[key] = combinedEdges.length;
+                combinedEdges.push(combinedEdge);
+            } else {
+
+                let index = edgeGroups2Index[key];
+                let combinedEdge = combinedEdges[index];
+                combinedEdge.edgeProperty.fileNameArray.push(edge.MxFileName);
+                combinedEdge.fileNameArray.push(edge.MxFileName);
+
+                combinedEdge.edgeProperty.portInstanceIndexArray.push(pi.pi_id);
+                combinedEdge.portInstanceIndexArray.push(pi.pi_id);
+            }
+
+
+        }
+
+
+        let nodes = renderInfo.data.nodes;
+        let edges = [];
+        for (let i = 0; i < combinedEdges.length; i++) {
+            edges.push(combinedEdges[i].edgeProperty);
+        }
+        this.setAnchor(nodes, edges, nodesId2Index)
+        console.log('combinedEdges', combinedEdges);
+        renderInfo.combinedEdges = combinedEdges;
+
+    },
+
+    getBlockEdgeList() {
+        if (succInitCodeInfo)
+            return codeInfo.portInstanceArray;
+        else
+            return [];
     },
 
     switchDpcId(dpc_id) {
@@ -316,7 +427,7 @@ const CodeAnalyseTool = {
         }
 
         // console.log('renderInfo', renderInfo);
-        return { nodes: nodes, edges: edges };
+        // return { nodes: nodes, edges: edges };
     },
 
     getRenderData() {
@@ -390,6 +501,32 @@ const CodeAnalyseTool = {
             // console.log('sourceIndex', sourceIndex);
             // console.log('targetAnchor', edge.targetAnchor);
             // console.log('sourceAnchor', edge.sourceAnchor);
+        }
+    },
+
+    setAnchor(nodes, edges, nodesId2Index) {
+
+        for (let i = 0; i < edges.length; i++) {
+            let edge = edges[i];
+            let targetIndex = nodesId2Index[edge.target];
+            let sourceIndex = nodesId2Index[edge.source];
+            if (nodes[targetIndex].y > nodes[sourceIndex].y) {
+                edge.targetAnchor = 0;
+                edge.sourceAnchor = 2;
+
+            } else if (nodes[targetIndex].y < nodes[sourceIndex].y) {
+                edge.targetAnchor = 2;
+                edge.sourceAnchor = 0;
+            } else {
+                if (nodes[targetIndex].x > nodes[sourceIndex].x) {
+                    edge.targetAnchor = 3;
+                    edge.sourceAnchor = 1;
+                } else {
+                    edge.targetAnchor = 1;
+                    edge.sourceAnchor = 3;
+                }
+            }
+
         }
     },
 

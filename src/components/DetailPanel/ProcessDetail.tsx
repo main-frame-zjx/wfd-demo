@@ -1,5 +1,5 @@
 import styles from "./index.less";
-import { Input, Button } from "antd";
+import { Input, Button, Checkbox } from "antd";
 import React, { useContext, useState } from "react";
 import LangContext from "../../util/context";
 import DataTableModal from "./DataTableModal";
@@ -39,6 +39,11 @@ const ProcessDetail: React.FC<ProcessProps> = ({ model, onChange, readOnly = fal
     const validValue = Math.min(Math.max(validateIntegerInput(e.target.value, 0), 0), 3);
     onChange('dpcId', validValue);
     window.SwitchDpcId(validValue);
+  };
+
+  const useCombinedEdgeOnChange = (e) => {
+    onChange('useCombinedEdge', e.target.checked)
+    window.UseCombinedEdge(e.target.checked);
   };
 
   // const fpsOnChange = (e) => {
@@ -106,6 +111,13 @@ const ProcessDetail: React.FC<ProcessProps> = ({ model, onChange, readOnly = fal
               onChange={dpcIdOnChange}
               disabled={readOnly}
             />
+          </div>
+
+
+          <div className={styles.panelRow}>
+            <Checkbox onChange={useCombinedEdgeOnChange}
+              disabled={readOnly}
+              checked={model.useCombinedEdge}>显示合并后的边</Checkbox>
           </div>
         </div>
       </div>

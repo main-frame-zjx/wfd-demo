@@ -35,6 +35,7 @@ declare global {
     GotoAdminPanel: () => void;
     GotoIntroDocs: () => void;
     SwitchDpcId: (dpcId: number) => void;
+    UseCombinedEdge: (useCombinedEdge: boolean) => void;
   }
 }
 
@@ -108,6 +109,7 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
         fpsmax: 10,
         fps: 0,
         dpcId: 0,
+        useCombinedEdge: false,
         currentCycle: 0,
       },
     };
@@ -202,9 +204,7 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
     this.graph.render();
   }
 
-  calcColor = (cycle_id: number, dump_file_name: string) => {
-    let window_size = this.state.processModel.windowSize;
-    let rate = DumpAnalyseTool.calcPortTransferRate(cycle_id, dump_file_name, window_size);
+  rate2style(rate) {
     const style: any = {
       lineWidth: 2,
       shadowColor: 'transparent',
@@ -246,28 +246,67 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
       style.lineWidth = 2 + rate * 2;
     }
     return style;
-    // let r = 0, g = 0, b = 0;
-    // if (rate <= 0.5) {
-    //   r = Math.round(255 * (2 * rate));
-    //   g = 255;
-    // } else {
-    //   r = 255;
-    //   g = 255 - Math.round(255 * (2 * (rate - 0.5)))
-    // }
+  }
 
-    // // console.log('stroke', `rgb(${r}, ${g}, ${b})`);
-    // return { stroke: `rgb(${r}, ${g}, ${b})` }
+  calcNormalEdgeColor = (cycle_id: number, dump_file_name: string) => {
+    let window_size = this.state.processModel.windowSize;
+    let rate = DumpAnalyseTool.calcPortTransferRate(cycle_id, dump_file_name, window_size);
+    return this.rate2style(rate);
+
+  }
+
+  calcCombinedEdgeColor = (cycle_id: number, fileNameArray) => {
+    let window_size = this.state.processModel.windowSize;
+    let cnt = 0;
+    let total = 0;
+    let currentRate = [];
+    for (let i = 0; i < fileNameArray.length; i++) {
+      cnt += 1;
+      let rate = DumpAnalyseTool.calcPortTransferRate(cycle_id, fileNameArray[i], window_size);
+      total += rate;
+      currentRate.push(rate);
+    }
+    if (cnt == 0) cnt += 1;
+    let style = this.rate2style(total / cnt);
+    style.currentRate = currentRate;
+    return style;
+
   }
 
   SwitchDpcId = (dpcId: number) => {
 
     if (dpcId >= 0 && dpcId < 4 && CodeAnalyseTool.getSuccInitRenderInfo()) {
       console.log('try change dpcId to ', dpcId);
-      let data = CodeAnalyseTool.switchDpcId(dpcId);
+      CodeAnalyseTool.switchDpcId(dpcId);
+      CodeAnalyseTool.switchEdgeSet(dpcId, false);
+      let data;
+      if (this.state.processModel.useCombinedEdge)
+        data = CodeAnalyseTool.getEdgeSetDrawData();
+      else
+        data = CodeAnalyseTool.getNormalEdgeDrawData();
+
       this.graph.data(data ? this.initShape(data) : { nodes: [], edges: [] });
       this.graph.render();
       this.RefreshGraph(-1);
     }
+
+  };
+
+  UseCombinedEdge = (useCombinedEdge: boolean) => {
+    if (CodeAnalyseTool.getSuccInitRenderInfo()) {
+      let data;
+      if (useCombinedEdge) {
+        console.log('use Combined Edge');
+        data = CodeAnalyseTool.getEdgeSetDrawData();
+      } else {
+        console.log('use normal Edge');
+        data = CodeAnalyseTool.getNormalEdgeDrawData();
+      }
+      this.graph.data(data ? this.initShape(data) : { nodes: [], edges: [] });
+      this.graph.render();
+      this.RefreshGraph(-1);
+    }
+
 
   };
 
@@ -296,7 +335,13 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
         for (let i = 0; i < edges.length; i++) {
           let edge = edges[i];
           const model = edge.getModel();
-          let style = this.calcColor(currentCycle, model.MxFileName);
+          let style;
+          if (this.state.processModel.useCombinedEdge && model.fileNameArray) {
+            style = this.calcCombinedEdgeColor(currentCycle, model.fileNameArray);
+          } else {
+            style = this.calcNormalEdgeColor(currentCycle, model.MxFileName);
+          }
+
           this.graph.updateItem(edge, {
             style: style,
             currentRate: style.currentRate
@@ -430,6 +475,7 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
     window.ImportGraphDataFromJson = this.ImportGraphDataFromJson;
     window.RefreshGraph = this.RefreshGraph;
     window.SwitchDpcId = this.SwitchDpcId;
+    window.UseCombinedEdge = this.UseCombinedEdge;
     window.GotoAdminPanel = this.GotoAdminPanel;
     window.GotoIntroDocs = this.GotoIntroDocs;
   }

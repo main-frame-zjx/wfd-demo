@@ -38,6 +38,7 @@ const i18n = {
     'signalEvent': '模块节点',
     'signalEvent.signal': '信号名',
     'sequenceFlow': 'Port',
+    'combinedEdge': '合并边',
     'sequenceFlow.expression': '条件表达式',
     'sequenceFlow.seq': '序号',
     'sequenceFlow.reverse': '反向',

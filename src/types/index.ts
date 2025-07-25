@@ -3,7 +3,7 @@ export interface IDefaultModel {
   id?: string;
   clazz?: 'start' | 'end' | 'gateway' | 'exclusiveGateway' | 'parallelGateway' | 'inclusiveGateway'
   | 'timerStart' | 'messageStart' | 'signalStart' | 'userTask' | 'scriptTask' | 'mailTask'
-  | 'javaTask' | 'receiveTask' | 'timerCatch' | 'messageCatch' | 'signalCatch' | 'subProcess' | 'flow' | 'process';
+  | 'javaTask' | 'receiveTask' | 'timerCatch' | 'messageCatch' | 'signalCatch' | 'subProcess' | 'flow' | 'process' | 'combinedEdge';
   label?: string;
   x?: number;
   y?: number;
@@ -55,6 +55,23 @@ export interface IFlowModel extends IDefaultModel {
   MxFileName?: string,
   currentRate?: number;
 }
+
+
+export interface ICombinedEdgeModel extends IDefaultModel {
+  source?: string;
+  target?: string;
+  sourceAnchor?: number;
+  targetAnchor?: number;
+  conditionExpression?: string;
+  seq?: string;
+  reverse?: boolean;
+  MxLabel?: string,
+  MxFileName?: string,
+  useMaxCalcRate?: boolean,
+  currentRate?: object[],
+  fileNameArray?: object[],
+  portInstanceIndexArray?: object[];
+}
 export interface IProcessModel extends IDefaultModel {
   name?: string;
   dataObjs?: object[];
@@ -65,6 +82,7 @@ export interface IProcessModel extends IDefaultModel {
   fpsmax?: number;
   fps?: number;
   dpcId?: number;
+  useCombinedEdge?: boolean,
   currentCycle?: number;
 }
 
