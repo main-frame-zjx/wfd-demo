@@ -1,20 +1,16 @@
 {
-  "name": "wfd",
+  "name": "dataflow_profiler",
   "version": "1.0.11",
-  "description": "a workflow designer base on @antv/g6",
+  "description": "a GPU dataflow viewer base on @antv/g6",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "src/index.d.ts",
-  "authors": {
-    "name": "guozhaolong",
-    "email": "guozhaolong@gmail.com"
-  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/guozhaolong/wfd.git"
+    "url": "git+https://github.com/main-frame-zjx/wfd-demo.git"
   },
   "scripts": {
-    "dev": "cd example && NODE_OPTIONS=--openssl-legacy-provider umi dev",
+    "dev": "cd example && umi dev",
     "build": "father build",
     "dev-father": "father dev"
   },
@@ -29,15 +25,16 @@
     "@antv/g6": "3.5.2",
     "@antv/matrix-util": "^2.0.7",
     "@antv/util": "~2.0.9",
+    "@influxdata/influxdb-client": "^1.35.0",
     "antd": "^4.24.16",
     "antd-etable": "^1.3.44",
-    "moment": "^2.26.0",
-    "react-router-dom": "5.2.0",
-    "rollup": "^3.29.5",
-    "react-markdown": "^6.0.3",
-    "remark-gfm": "^3.0.1",
     "highlight.js": "^11.9.0",
-    "markdown-to-jsx": "^7.2.1"
+    "markdown-to-jsx": "^7.2.1",
+    "moment": "^2.26.0",
+    "react-markdown": "^6.0.3",
+    "react-router-dom": "5.2.0",
+    "remark-gfm": "^3.0.1",
+    "rollup": "^3.29.5"
   },
   "peerDependencies": {
     "react": "16.12.0",
@@ -60,10 +57,6 @@
     "umi": "^3.2.2"
   },
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/guozhaolong/wfd/issues"
-  },
-  "homepage": "https://github.com/guozhaolong/wfd#readme",
   "directories": {
     "example": "example"
   },
@@ -71,6 +64,5 @@
     "workflow",
     "design",
     "diagram"
-  ],
-  "author": "stevenkwok"
+  ]
 }

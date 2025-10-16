@@ -6,3 +6,6 @@
 .idea
 /example/.umi/.cache
 /example/.umi
+
+/test_data/generate_code
+/test_data/generate_dump
