@@ -2,17 +2,17 @@ import styles from "./index.less";
 import { Checkbox, Input } from "antd";
 import React, { useContext } from "react";
 import LangContext from "../../util/context";
-import { IScriptModel } from '../../types';
+import { IModuleModel } from '../../types';
 import i18n from "../../util/zhcn";
 
-export interface ScriptProps {
-  model: IScriptModel;
+export interface ModuleProps {
+  model: IModuleModel;
   onChange: (...args: any[]) => any;
   readOnly: boolean;
 }
-const ScriptTaskDetail: React.FC<ScriptProps> = ({ model, onChange, readOnly = false, }) => {
+const ModuleDetail: React.FC<ModuleProps> = ({ model, onChange, readOnly = false, }) => {
   // const { i18n } = useContext(LangContext);
-  const title = i18n['scriptTask'];
+  const title = i18n['moduleDetail'];
   return (
     <div data-clazz={model.clazz}>
       <div className={styles.panelTitle}>{title}</div>
@@ -25,13 +25,13 @@ const ScriptTaskDetail: React.FC<ScriptProps> = ({ model, onChange, readOnly = f
             disabled={true}
           />
         </div>
-        <div className={styles.panelRow}>
+        {/* <div className={styles.panelRow}>
           <Checkbox onChange={(e) => onChange('hideIcon', e.target.checked)}
             disabled={readOnly}
             checked={!!model.hideIcon}>隐藏module</Checkbox>
-        </div>
+        </div> */}
         <div className={styles.panelRow}>
-          <div>{i18n['scriptTask.script']}：</div>
+          <div>{i18n['moduleDetail.script']}：</div>
           <Input.TextArea style={{ width: '100%', fontSize: 12 }}
             rows={4}
             value={model.script}
@@ -46,4 +46,4 @@ const ScriptTaskDetail: React.FC<ScriptProps> = ({ model, onChange, readOnly = f
   )
 };
 
-export default ScriptTaskDetail;
+export default ModuleDetail;

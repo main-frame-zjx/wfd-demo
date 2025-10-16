@@ -32,7 +32,7 @@ export interface IReceiveModel extends IDefaultModel {
   waitState?: string;
   stateValue?: string;
 }
-export interface IScriptModel extends IDefaultModel {
+export interface IModuleModel extends IDefaultModel {
   script?: string;
 }
 export interface ISignalModel extends IDefaultModel {
@@ -43,7 +43,7 @@ export interface ITimerModel extends IDefaultModel {
   duration?: string;
 }
 
-export interface IFlowModel extends IDefaultModel {
+export interface IPortModel extends IDefaultModel {
   source?: string;
   target?: string;
   sourceAnchor?: number;
@@ -82,8 +82,10 @@ export interface IProcessModel extends IDefaultModel {
   fpsmax?: number;
   fps?: number;
   dpcId?: number;
-  useCombinedEdge?: boolean,
+  useCombinedEdge?: boolean;
+  considerValid?: boolean;
   currentCycle?: number;
+  useTestData?: boolean;
 }
 
 export interface ISelectData {

@@ -12,6 +12,7 @@ import { exportXML } from "./util/bpmn";
 import LangContext from "./util/context";
 import CodeAnalyseTool from "./util/codeAnalyse";
 import DumpAnalyseTool from "./util/dumpAnalyse";
+import FrameDataCacheTool from "./util/frameDataCache";
 import DetailPanel from "./components/DetailPanel";
 import ItemPanel from "./components/ItemPanel";
 import ToolbarPanel from "./components/ToolbarPanel";
@@ -36,6 +37,8 @@ declare global {
     GotoIntroDocs: () => void;
     SwitchDpcId: (dpcId: number) => void;
     UseCombinedEdge: (useCombinedEdge: boolean) => void;
+    UpdateConsiderValid: (considerValid: boolean) => void;
+    GetUseTestData: () => boolean;
   }
 }
 
@@ -110,7 +113,9 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
         fps: 0,
         dpcId: 0,
         useCombinedEdge: false,
+        considerValid: false,
         currentCycle: 0,
+        useTestData: false,
       },
     };
   }
@@ -214,10 +219,12 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
       currentRate: rate
     };
 
-
+    if (rate > 1) rate = 1;
+    if (rate < 0) rate = 0
     if (rate === 0) {
       return { ...style, stroke: 'rgb(230, 230, 230)' }; // 更柔和的灰色
     }
+
     // HSL颜色空间插值
     const hue = 120 - (rate * 120); // 绿(120°)→红(0°)
     const saturation = 95;
@@ -254,6 +261,8 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
     return this.rate2style(rate);
 
   }
+
+
 
   calcCombinedEdgeColor = (cycle_id: number, fileNameArray) => {
     let window_size = this.state.processModel.windowSize;
@@ -311,6 +320,26 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
   };
 
 
+  UpdateConsiderValid = (considerValid: boolean) => {
+    if (CodeAnalyseTool.getSuccInitRenderInfo()) {
+      let data;
+      if (considerValid) {
+        console.log('considerValid');
+      } else {
+        console.log('not considerValid');
+      }
+
+      this.RefreshGraph(-1);
+    }
+
+
+  };
+
+  GetUseTestData = (): boolean => {
+    return this.state.processModel.useTestData;
+  };
+
+
 
   RefreshGraph = (currentCycle: number) => {
     if (currentCycle == -1) {
@@ -340,6 +369,47 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
             style = this.calcCombinedEdgeColor(currentCycle, model.fileNameArray);
           } else {
             style = this.calcNormalEdgeColor(currentCycle, model.MxFileName);
+          }
+
+          this.graph.updateItem(edge, {
+            style: style,
+            currentRate: style.currentRate
+            // style: { stroke: renderInfo.data.edges[i].color } // 仅更新颜色属性
+          });
+        }
+        this.graph.get('canvas').draw();
+      }
+
+    }
+
+  };
+
+
+
+  RefreshGraph_v2 = async (currentCycle: number) => {
+    if (currentCycle == -1) {
+      currentCycle = this.state.processModel.currentCycle;
+      console.log('currentCycle == -1, use last cycle ', currentCycle);
+    }
+    this.state.processModel.currentCycle = currentCycle;
+    // // 根据当前周期更新图形数据
+    if (CodeAnalyseTool.getSuccInitCodeInfo() && CodeAnalyseTool.getSuccInitRenderInfo() && FrameDataCacheTool.getSuccInit()) {
+      let queryData = await FrameDataCacheTool.queryData(currentCycle, this.state.processModel.windowSize, false);
+      // TODO: 渲染方案2，需要进行性能测试
+      if (this.graph) {
+        const edges = this.graph.getEdges();
+        // console.log(edges);
+        for (let i = 0; i < edges.length; i++) {
+          let edge = edges[i];
+          const model = edge.getModel();
+          let style;
+          if (this.state.processModel.useCombinedEdge && model.fileNameArray) {
+            // TODO：这里要计算合并之后的边的速度，要修改代码
+            style = this.rate2style(queryData[model.fileNameArray[0]]);
+          } else {
+            // style = this.rate2style(queryData[model.MxFileName]);
+            let rate = queryData[model.MxFileName] ? queryData[model.MxFileName] : 0;
+            style = this.rate2style(rate);
           }
 
           this.graph.updateItem(edge, {
@@ -473,9 +543,11 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
     window.UpdateGraph = this.UpdateGraph;
     window.ExportGraphDataToJson = this.ExportGraphDataToJson;
     window.ImportGraphDataFromJson = this.ImportGraphDataFromJson;
-    window.RefreshGraph = this.RefreshGraph;
+    window.RefreshGraph = this.RefreshGraph_v2;
     window.SwitchDpcId = this.SwitchDpcId;
     window.UseCombinedEdge = this.UseCombinedEdge;
+    window.UpdateConsiderValid = this.UpdateConsiderValid;
+    window.GetUseTestData = this.GetUseTestData;
     window.GotoAdminPanel = this.GotoAdminPanel;
     window.GotoIntroDocs = this.GotoIntroDocs;
   }

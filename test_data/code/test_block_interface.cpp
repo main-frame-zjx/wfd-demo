@@ -9,7 +9,7 @@ struct Xgf_ptr_object
     CGfdBlock *gsd_module[4];
     CGfdBlock *lsd_module[4];
     CGfdBlock *pai_module[4];
-    CGfdBlock *gff_module[4];
+    CGffBlock *gff_module[4];
 
     Port *GFD_GIA_draw_cmd_port[4] = {nullptr};
     Port *GIA_GFD_drawdone_port[4] = {nullptr};

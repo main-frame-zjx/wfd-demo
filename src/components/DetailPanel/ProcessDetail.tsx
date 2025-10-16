@@ -46,32 +46,24 @@ const ProcessDetail: React.FC<ProcessProps> = ({ model, onChange, readOnly = fal
     window.UseCombinedEdge(e.target.checked);
   };
 
-  // const fpsOnChange = (e) => {
-  //   const validValue = Math.max(validateIntegerInput(e.target.value, 10), 1);
-  //   onChange('fps', validValue);
-  // };
+  const considerValidOnChange = (e) => {
+    onChange('considerValid', e.target.checked)
+    window.UpdateConsiderValid(e.target.checked);
+  };
+
+  const useTestDataOnChange = (e) => {
+    onChange('useTestData', e.target.checked);
+  };
+
+
+
 
   return (
     <>
       <div data-clazz={model.clazz}>
         <div className={styles.panelTitle}>{i18n['process']}</div>
         <div className={styles.panelBody}>
-          <div className={styles.panelRow}>
-            <div>{i18n['process.id']}：</div>
-            <Input style={{ width: '100%', fontSize: 12 }}
-              value={model.id}
-              onChange={(e) => onChange('id', e.target.value)}
-              disabled={readOnly}
-            />
-          </div>
-          <div className={styles.panelRow}>
-            <div>{i18n['process.name']}：</div>
-            <Input style={{ width: '100%', fontSize: 12 }}
-              value={model.name}
-              onChange={(e) => onChange('name', e.target.value)}
-              disabled={readOnly}
-            />
-          </div>
+
           <div className={styles.panelRow}>
             <div>{i18n['process.windowSize']}：</div>
             <Input style={{ width: '100%', fontSize: 12 }}
@@ -85,7 +77,7 @@ const ProcessDetail: React.FC<ProcessProps> = ({ model, onChange, readOnly = fal
             <Input style={{ width: '100%', fontSize: 12 }}
               value={model.stepSize}
               onChange={stepSizeOnChange}
-              disabled={readOnly}
+              disabled={readOnly || true}
             />
           </div>
           <div className={styles.panelRow}>
@@ -96,14 +88,7 @@ const ProcessDetail: React.FC<ProcessProps> = ({ model, onChange, readOnly = fal
               disabled={readOnly}
             />
           </div>
-          {/* <div className={styles.panelRow}>
-            <div>{i18n['process.fps']}：</div>
-            <Input style={{ width: '100%', fontSize: 12 }}
-              value={model.fps}
-              onChange={fpsOnChange}
-              disabled={true}
-            />
-          </div> */}
+
           <div className={styles.panelRow}>
             <div>{i18n['process.dpcId']}：</div>
             <Input style={{ width: '100%', fontSize: 12 }}
@@ -118,6 +103,19 @@ const ProcessDetail: React.FC<ProcessProps> = ({ model, onChange, readOnly = fal
             <Checkbox onChange={useCombinedEdgeOnChange}
               disabled={readOnly}
               checked={model.useCombinedEdge}>显示合并后的边</Checkbox>
+          </div>
+
+
+          <div className={styles.panelRow}>
+            <Checkbox onChange={considerValidOnChange}
+              disabled={readOnly}
+              checked={model.considerValid}>筛选有效数据</Checkbox>
+          </div>
+
+          <div className={styles.panelRow}>
+            <Checkbox onChange={useTestDataOnChange}
+              disabled={readOnly}
+              checked={model.useTestData}>使用测试用例</Checkbox>
           </div>
         </div>
       </div>

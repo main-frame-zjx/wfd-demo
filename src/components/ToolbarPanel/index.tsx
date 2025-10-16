@@ -20,7 +20,7 @@ const ToolbarPanel = forwardRef<any, PropsWithChildren<any>>((props, ref) => {
           <span className="iconfont icon-redo" />
         </span>
       </Tooltip>
-      <span className={styles.separator} />
+      {/* <span className={styles.separator} />
       <Tooltip title={i18n['tooltip.copy']}>
         <span className={styles.command} data-command="copy">
           <span className="iconfont icon-copy-o" />
@@ -35,7 +35,7 @@ const ToolbarPanel = forwardRef<any, PropsWithChildren<any>>((props, ref) => {
         <span className={styles.command} data-command="delete">
           <span className="iconfont icon-delete-o" />
         </span>
-      </Tooltip>
+      </Tooltip> */}
       <span className={styles.separator} />
       <Tooltip title={i18n['tooltip.zoomIn']}>
         <span className={styles.command} data-command="zoomIn">
@@ -58,7 +58,7 @@ const ToolbarPanel = forwardRef<any, PropsWithChildren<any>>((props, ref) => {
         </span>
       </Tooltip>
       <span className={styles.separator} />
-      <Tooltip title={i18n['tooltip.toFront']}>
+      {/* <Tooltip title={i18n['tooltip.toFront']}>
         <span className={styles.command} data-command="toFront">
           <span className="iconfont icon-to-front" />
         </span>
@@ -67,7 +67,7 @@ const ToolbarPanel = forwardRef<any, PropsWithChildren<any>>((props, ref) => {
         <span className={styles.command} data-command="toBack">
           <span className="iconfont icon-to-back" />
         </span>
-      </Tooltip>
+      </Tooltip> */}
     </div>
   )
 });

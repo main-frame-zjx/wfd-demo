@@ -4,14 +4,25 @@ let succInitCodeInfo = false;
 let succInitRenderInfo = false;
 let tmpData = null;
 let renderInfo = null
+
+import { message } from "antd";
+import CodeProcessFunc from "./codeProcessFunc";
+
+
 class CodeInfo {
     constructor() {
         this.moduleNum = 0;
         this.moduleInstanceNum = 0;
+        this.portNum = 0;
         this.portInstanceNum = 0;
         this.moduleArray = [];
         this.moduleInstanceArray = [];
+        this.portArray = [];
         this.portInstanceArray = [];
+        this.moduleNameMap = new Map();
+        this.moduleInstanceMap = new Map();
+        this.portNameMap = new Map();
+        this.portInstanceMap = new Map();
     }
 }
 
@@ -45,13 +56,21 @@ class MxModuleInstance {
     }
 }
 
-
+class MxPort {
+    constructor(p_id, port_type, instance_num, name,) {
+        this.p_id = p_id;
+        this.port_type = port_type;
+        this.instance_num = instance_num;
+        this.name = name;
+    }
+}
 
 class MxPortInstance {
-    constructor(pi_id, name, dump_file_name, receive_index, transmit_index) {
+    constructor(pi_id, name, dump_file_name, index, receive_index, transmit_index) {
         this.pi_id = pi_id;
         this.name = name;
         this.dump_file_name = dump_file_name;
+        this.index = index
         this.receive_index = receive_index;
         this.transmit_index = transmit_index;
     }
@@ -85,14 +104,82 @@ function readFileAsTextPromise(file) {
     });
 }
 
+function code_analyse_test_case1(codeInfo, referCodeInfo) {
+    return true;
+};
+
 const CodeAnalyseTool = {
     async analyseCodeFiles(files) {
         this.initCodeInfo();
-        await this.readTxtInit(files);
+        await this.readTxtInit(files, codeInfo);
     },
 
-    // 把module，moduleInstance，moduleInstanceArray进行读取和保存
-    async readTxtInit(files) {
+    async analyseCodeFilesToRefer(files, referCodeInfo) {
+        await this.readTxtInit(files, referCodeInfo);
+    },
+
+    async analyseCodeFiles_cpp(files, useTestData) {
+        this.initCodeInfo();
+
+        await this.readCppInit(files);
+
+        if (useTestData) {
+            // check analyse result match with .txt file
+            let referCodeInfo = new CodeInfo();
+            this.analyseCodeFilesToRefer(files, referCodeInfo);
+            let pass = code_analyse_test_case1(codeInfo, referCodeInfo);
+            if (pass) {
+                message.info("代码解析器测试通过！\ncode_analyse_test_case1");
+            } else {
+                message.error("代码解析器测试未通过！\ncode_analyse_test_case1");
+            }
+
+
+        }
+    },
+
+
+
+    // extract and save module, moduleInstance, port, portInstance.
+    async readCppInit(files) {
+        if (files) {
+            let finalCode = '';
+
+            // expand for loop
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const fileName = file.name;
+                if (fileName.endsWith('.cpp') || fileName.endsWith('.c') || fileName.endsWith('.h')) {
+                    await readFileAsTextPromise(file)
+                        .then((fileContent) => {
+                            let expandedCode = CodeProcessFunc.expandForLoop(fileContent);
+                            finalCode += CodeProcessFunc.replaceToString(expandedCode);
+                        })
+                        .catch((error) => {
+                            console.error('Error reading file:', error);
+                        });
+                }
+            }
+
+            // console.log(finalCode);
+            CodeProcessFunc.extractModule(finalCode, codeInfo.moduleNameMap, codeInfo.moduleArray);
+            CodeProcessFunc.generateModuleInstance(codeInfo.moduleArray, codeInfo.moduleInstanceMap, codeInfo.moduleInstanceArray);
+            codeInfo.moduleNum = codeInfo.moduleArray.length;
+            codeInfo.moduleInstanceNum = codeInfo.moduleInstanceArray.length;
+
+            CodeProcessFunc.extractPort(finalCode, codeInfo.portNameMap, codeInfo.portArray);
+            CodeProcessFunc.generatePortInstance(codeInfo.portArray, codeInfo.portInstanceMap, codeInfo.portInstanceArray);
+            CodeProcessFunc.extractPortInstanceFileName(finalCode, codeInfo.portInstanceMap);
+            CodeProcessFunc.extractConnectInfo(finalCode, codeInfo.portInstanceMap, codeInfo.moduleInstanceMap);
+            // CodeProcessFunc.printPortInstances(codeInfo.portInstanceArray);
+            codeInfo.portNum = codeInfo.portArray.length;
+            codeInfo.portInstanceNum = codeInfo.portInstanceArray.length;
+            succInitCodeInfo = true;
+        }
+    },
+
+    // from txt file read module, moduleInstance, port, portInstance.
+    async readTxtInit(files, _codeInfo_) {
         if (files) {
 
             // 用于存储所有文件的读取和处理 Promise
@@ -109,7 +196,7 @@ const CodeAnalyseTool = {
                             let curLine = 0;
                             let moduleNum = parseInt(lines[curLine]);
                             if (moduleNum) {
-                                codeInfo.moduleNum = moduleNum;
+                                _codeInfo_.moduleNum = moduleNum;
                                 curLine++;
                             }
                             else {
@@ -117,7 +204,7 @@ const CodeAnalyseTool = {
                                 return;
                             }
 
-                            for (let i = 0; i < codeInfo.moduleNum; i++) {
+                            for (let i = 0; i < _codeInfo_.moduleNum; i++) {
                                 const lineContent = lines[curLine];
                                 const params = lineContent.split(/\s+/);
                                 if (params.length !== 4) {
@@ -125,14 +212,14 @@ const CodeAnalyseTool = {
                                     return;
                                 }
                                 let newModule = new MxModule(parseInt(params[0]), params[1], parseInt(params[2]), params[3]);
-                                codeInfo.moduleArray.push(newModule);
+                                _codeInfo_.moduleArray.push(newModule);
                                 curLine++;
                             }
 
 
                             let moduleInstanceNum = parseInt(lines[curLine]);
                             if (moduleInstanceNum) {
-                                codeInfo.moduleInstanceNum = moduleInstanceNum;
+                                _codeInfo_.moduleInstanceNum = moduleInstanceNum;
                                 curLine++;
                             }
                             else {
@@ -140,7 +227,7 @@ const CodeAnalyseTool = {
                                 return;
                             }
 
-                            for (let i = 0; i < codeInfo.moduleInstanceNum; i++) {
+                            for (let i = 0; i < _codeInfo_.moduleInstanceNum; i++) {
                                 const lineContent = lines[curLine];
                                 const params = lineContent.split(/\s+/);
                                 if (params.length !== 4) {
@@ -148,14 +235,14 @@ const CodeAnalyseTool = {
                                     return;
                                 }
                                 let newModuleInstance = new MxModuleInstance(parseInt(params[0]), parseInt(params[1]), params[2], parseInt(params[3]));
-                                codeInfo.moduleInstanceArray.push(newModuleInstance);
+                                _codeInfo_.moduleInstanceArray.push(newModuleInstance);
                                 curLine++;
                             }
 
 
                             let portInstanceNum = parseInt(lines[curLine]);
                             if (portInstanceNum) {
-                                codeInfo.portInstanceNum = portInstanceNum;
+                                _codeInfo_.portInstanceNum = portInstanceNum;
                                 curLine++;
                             }
                             else {
@@ -163,15 +250,15 @@ const CodeAnalyseTool = {
                                 return;
                             }
 
-                            for (let i = 0; i < codeInfo.portInstanceNum; i++) {
+                            for (let i = 0; i < _codeInfo_.portInstanceNum; i++) {
                                 const lineContent = lines[curLine];
                                 const params = lineContent.split(/\s+/);
                                 if (params.length !== 5) {
                                     alert(fileName + ", line " + curLine.toString() + ", param num error!");
                                     return;
                                 }
-                                let newPortInstance = new MxPortInstance(parseInt(params[0]), params[1], params[2], parseInt(params[3]), parseInt(params[4]));
-                                codeInfo.portInstanceArray.push(newPortInstance);
+                                let newPortInstance = new MxPortInstance(parseInt(params[0]), params[1], params[2], i, parseInt(params[3]), parseInt(params[4]));
+                                _codeInfo_.portInstanceArray.push(newPortInstance);
                                 curLine++;
                             }
 
@@ -189,17 +276,17 @@ const CodeAnalyseTool = {
         }
     },
 
-    sampleInit() {
-        info = {
-            moduleNum: 10,
-            moduleInstanceNum: 37,
-            portInstanceNum: 4,
-            moduleArray: [],
-            moduleInstanceArray: [],
-            portInstanceArray: []
-        };
-        this.setCodeInfo(info);
-    },
+    // sampleInit() {
+    //     info = {
+    //         moduleNum: 10,
+    //         moduleInstanceNum: 37,
+    //         portInstanceNum: 4,
+    //         moduleArray: [],
+    //         moduleInstanceArray: [],
+    //         portInstanceArray: []
+    //     };
+    //     this.setCodeInfo(info);
+    // },
 
     initCodeInfo() {
         codeInfo = new CodeInfo();
@@ -245,7 +332,8 @@ const CodeAnalyseTool = {
         else if (dpc_id >= 0 && dpc_id < 4) {
 
             const { drawModuleInstanceArray, drawPortInstanceArray, nodesId2Index } = this.selectModuleInstanceAndPortToDraw(dpc_id);
-
+            console.log(`drawModuleInstanceArray.length = ${drawModuleInstanceArray.length}`);
+            console.log(`drawPortInstanceArray.length = ${drawPortInstanceArray.length}`);
             // 这里分配给每个node的位置
             for (let i = 0; i < drawModuleInstanceArray.length; i++) {
                 let mi = drawModuleInstanceArray[i];
@@ -287,7 +375,8 @@ const CodeAnalyseTool = {
                 edge.curveOffset = edge.curveOffset * edgeGroupsLen;
                 edges.push(edge);
             }
-            this.setPositionAndAnchor(nodes, edges, nodesId2Index, 900, 500);
+            this.setPositionAndAnchor_Uniformly(nodes, edges, nodesId2Index, 900, 500);
+            // this.setPositionAndAnchor(nodes, edges, nodesId2Index, 900, 500);
             console.log('nodesId2Index', nodesId2Index);
             renderInfo.data.nodes = nodes;
             renderInfo.data.edges = edges;
@@ -458,8 +547,39 @@ const CodeAnalyseTool = {
     },
 
 
-    setPositionAndAnchor(nodes, edges, nodesId2Index, x_max, y_max) {
+    setAnchor(nodes, edges, nodesId2Index) {
 
+        for (let i = 0; i < edges.length; i++) {
+            let edge = edges[i];
+            let targetIndex = nodesId2Index[edge.target];
+            let sourceIndex = nodesId2Index[edge.source];
+            //
+            let y_diff = Math.abs(nodes[targetIndex].y - nodes[sourceIndex].y);
+            let x_diff = Math.abs(nodes[targetIndex].x - nodes[sourceIndex].x);
+            if (y_diff >= x_diff) {
+                if (nodes[targetIndex].y > nodes[sourceIndex].y) {
+                    edge.targetAnchor = 0;
+                    edge.sourceAnchor = 2;
+
+                } else {
+                    edge.targetAnchor = 2;
+                    edge.sourceAnchor = 0;
+                }
+            } else {
+                if (nodes[targetIndex].x > nodes[sourceIndex].x) {
+                    edge.targetAnchor = 3;
+                    edge.sourceAnchor = 1;
+                } else {
+                    edge.targetAnchor = 1;
+                    edge.sourceAnchor = 3;
+                }
+            }
+
+        }
+    },
+
+
+    setPositionAndAnchor(nodes, edges, nodesId2Index, x_max, y_max) {
         let num = nodes.length;
         let x_posArray = [1, 1, 3, 7, 9, 5, 11, 7, 4, -1];
         let y_posArray = [1, -1, 1, 0, 0, 1, 0, 1, -1, 0];
@@ -475,60 +595,37 @@ const CodeAnalyseTool = {
             nodes[i].y = parseInt(y_);
         }
 
-        for (let i = 0; i < edges.length; i++) {
-            let edge = edges[i];
-            let targetIndex = nodesId2Index[edge.target];
-            let sourceIndex = nodesId2Index[edge.source];
-            if (y_posArray[targetIndex] > y_posArray[sourceIndex]) {
-                edge.targetAnchor = 0;
-                edge.sourceAnchor = 2;
-
-            } else if (y_posArray[targetIndex] < y_posArray[sourceIndex]) {
-                edge.targetAnchor = 2;
-                edge.sourceAnchor = 0;
-            } else {
-                if (x_posArray[targetIndex] > x_posArray[sourceIndex]) {
-                    edge.targetAnchor = 3;
-                    edge.sourceAnchor = 1;
-                } else {
-                    edge.targetAnchor = 1;
-                    edge.sourceAnchor = 3;
-                }
-            }
-
-
-            // console.log('targetIndex', targetIndex);
-            // console.log('sourceIndex', sourceIndex);
-            // console.log('targetAnchor', edge.targetAnchor);
-            // console.log('sourceAnchor', edge.sourceAnchor);
-        }
+        this.setAnchor(nodes, edges, nodesId2Index);
     },
 
-    setAnchor(nodes, edges, nodesId2Index) {
 
-        for (let i = 0; i < edges.length; i++) {
-            let edge = edges[i];
-            let targetIndex = nodesId2Index[edge.target];
-            let sourceIndex = nodesId2Index[edge.source];
-            if (nodes[targetIndex].y > nodes[sourceIndex].y) {
-                edge.targetAnchor = 0;
-                edge.sourceAnchor = 2;
 
-            } else if (nodes[targetIndex].y < nodes[sourceIndex].y) {
-                edge.targetAnchor = 2;
-                edge.sourceAnchor = 0;
-            } else {
-                if (nodes[targetIndex].x > nodes[sourceIndex].x) {
-                    edge.targetAnchor = 3;
-                    edge.sourceAnchor = 1;
-                } else {
-                    edge.targetAnchor = 1;
-                    edge.sourceAnchor = 3;
-                }
-            }
 
+    setPositionAndAnchor_Uniformly(nodes, edges, nodesId2Index, x_max, y_max) {
+        let num = nodes.length;
+        // 计算中心点坐标
+        let cx = x_max / 2;
+        let cy = y_max / 2;
+        // 计算半径（取最大尺寸的40%以确保不超出边界）
+        let r = Math.min(x_max, y_max) * 0.4;
+
+        // 移除不必要的数组和条件检查，直接计算每个节点的坐标
+        for (let i = 0; i < num; i++) {
+            // 计算角度（均匀分布）
+            let angle = (2 * Math.PI / num) * i;
+            // 计算x和y坐标
+            let x = cx + r * Math.cos(angle);
+            let y = cy + r * Math.sin(angle);
+            // 赋值坐标（使用parseInt保持与原函数一致）
+            nodes[i].x = parseInt(x);
+            nodes[i].y = parseInt(y);
         }
+
+        // 调用setAnchor方法处理锚点
+        this.setAnchor(nodes, edges, nodesId2Index);
     },
+
+
 
 
     selectModuleInstanceAndPortToDraw(dpc_id) {

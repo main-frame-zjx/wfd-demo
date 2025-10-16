@@ -7,9 +7,19 @@ import { plugin } from './plugin';
 export function getRoutes() {
   const routes = [
   {
+    "path": "/admin",
+    "exact": true,
+    "component": require('@/pages/admin.js').default
+  },
+  {
     "path": "/",
     "exact": true,
     "component": require('@/pages/index.js').default
+  },
+  {
+    "path": "/introPage",
+    "exact": true,
+    "component": require('@/pages/introPage.js').default
   }
 ];
 
