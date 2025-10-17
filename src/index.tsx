@@ -29,9 +29,9 @@ registerBehavior(G6);
 declare global {
   interface Window {
     GenerateGraph: () => void;
+    ReGenerateGraphEdge: () => void;
     UpdateGraph: () => void;
     ExportGraphDataToJson: () => void;
-    ImportGraphDataFromJson: () => void;
     RefreshGraph: (currentCycle: number) => void;
     GotoAdminPanel: () => void;
     GotoIntroDocs: () => void;
@@ -39,6 +39,7 @@ declare global {
     UseCombinedEdge: (useCombinedEdge: boolean) => void;
     UpdateConsiderValid: (considerValid: boolean) => void;
     GetUseTestData: () => boolean;
+
   }
 }
 
@@ -51,11 +52,8 @@ export interface DesignerProps extends RouteComponentProps {
   mode: 'default' | 'view' | 'edit';
   /** 语言 */
   lang?: 'en' | 'zh';
-  /** 流程数据 */
   data?: any;
-  /** 审核人 */
   users?: ISelectData[];
-  /** 审核组 */
   groups?: ISelectData[];
 }
 
@@ -63,14 +61,6 @@ export interface DesignerStates {
   selectedModel: IDefaultModel;
   processModel: IProcessModel;
 }
-
-// let bottombarVisible = false;
-
-// function setbottombarVisible(flag:boolean){
-//   bottombarVisible = flag;
-// }
-
-// export{bottombarVisible,setbottombarVisible};
 
 
 
@@ -152,30 +142,7 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
     }
   };
 
-  ImportGraphDataFromJson = () => {
-    // const file = CodeAnalyseTool.getTmpData();
-    // const reader = new FileReader();
 
-    // reader.onload = (e) => {
-    //   const content = e.target?.result as string; // 读取文件内容
-    //   try {
-    //     const totalData = JSON.parse(content); // 将 JSON 字符串解析为对象
-    //     if (this.graph) {
-    //       this.graph.data(totalData.graphData); // 更新 graph.data
-    //       CodeAnalyseTool.setCodeInfo(totalData.codeInfo);
-    //       CodeAnalyseTool.setSuccInit(true);
-    //       this.graph.render(); // 重新渲染
-    //       this.graph.fitView(); // 自适应视图
-    //       alert('文件上传并加载成功！');
-    //     }
-    //   } catch (error) {
-    //     console.error('文件解析失败:', error);
-    //     alert('文件解析失败，请检查文件格式！');
-    //   }
-    // };
-
-    // reader.readAsText(file); // 以文本形式读取文件
-  };
 
 
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -200,12 +167,20 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
     this.graph.render();
   }
 
+  ReGenerateGraphEdge = () => {
+    //get latest Mudule position
+    const edges = this.graph.getEdges();
+    const nodes = this.graph.getNodes();
+    let data = CodeAnalyseTool.reGenerateGraph(nodes, edges);
+    this.graph.data(data ? this.initShape(data) : { nodes: [], edges: [] });
+    this.graph.render();
+  }
+
   UpdateGraph = () => {
     // console.log('UpdateGraph');
     let data = CodeAnalyseTool.getRenderData();
     // console.log(data);
     this.graph.data(data ? this.initShape(data) : { nodes: [], edges: [] });
-
     this.graph.render();
   }
 
@@ -347,17 +322,10 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
       console.log('currentCycle == -1, use last cycle ', currentCycle);
     }
     this.state.processModel.currentCycle = currentCycle;
-    // // 根据当前周期更新图形数据
+    // // 根据当前cycle更新图形数据
     if (CodeAnalyseTool.getSuccInitCodeInfo() && CodeAnalyseTool.getSuccInitRenderInfo() && DumpAnalyseTool.getSuccInit()) {
-      // CodeAnalyseTool.updateRenderData(currentCycle);
-      // let renderInfo = CodeAnalyseTool.getRenderInfo();
-      // TODO: 渲染方案1，需要进行性能测试
-      // if (this.graph) {
-      //   this.graph.changeData(renderInfo.data);
-      //   this.graph.render();
-      // }
 
-      // TODO: 渲染方案2，需要进行性能测试
+      // 渲染方案
       if (this.graph) {
         const edges = this.graph.getEdges();
         // console.log(edges);
@@ -426,43 +394,6 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
   };
 
 
-  // 更新边的控制点位置
-  // setEdgesControlPoints = () => {
-  //   console.log('enter setEdgesControlPoints');
-  //   const edges = this.graph.getEdges();
-  //   const edgeGroups = {}; // 按源节点-目标节点分组
-  //   const renderInfo = CodeAnalyseTool.getRenderInfo();
-  //   if (!renderInfo.nodesId2Index) {
-  //     console.log('error in setEdgesControlPoints');
-  //     return;
-  //   }
-
-  //   // 分组边
-  //   edges.forEach(edge => {
-  //     const source = edge.source;
-  //     const target = edge.target;
-  //     const key = `${source}-${target}`;
-  //     edgeGroups[key] = edgeGroups[key] || [];
-  //     edgeGroups[key].push(edge);
-  //   });
-
-  //   // 为每组边设置控制点
-  //   Object.keys(edgeGroups).forEach(key => {
-  //     const groupEdges = edgeGroups[key];
-  //     groupEdges.forEach((edge, j) => {
-
-  //       const baseOffset = 20; // 基础偏移量
-  //       const step = j;
-  //       const offsetValue = baseOffset * (step + 1);
-
-  //       // 设置控制点
-  //       this.graph.updateItem(edge, {
-  //         curvePosition: 0.5,
-  //         curveOffset: offsetValue
-  //       });
-  //     });
-  //   });
-  // };
 
   componentDidMount() {
     const { isView, mode } = this.props;
@@ -517,7 +448,6 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
         // type: 'arc',
         // type: 'smooth',
         style: {
-          // stroke: 'rgb(194, 207, 209)', // 线条颜色
           lineWidth: 2,      // 线条宽度
           lineAppendWidth: 20,
           endArrow: true,    // 是否显示箭头
@@ -540,9 +470,9 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
     this.initEvents();
     // window.parent.setbottombarVisable = this.setbottombarVisable;
     window.GenerateGraph = this.GenerateGraph;
+    window.ReGenerateGraphEdge = this.ReGenerateGraphEdge;
     window.UpdateGraph = this.UpdateGraph;
     window.ExportGraphDataToJson = this.ExportGraphDataToJson;
-    window.ImportGraphDataFromJson = this.ImportGraphDataFromJson;
     window.RefreshGraph = this.RefreshGraph_v2;
     window.SwitchDpcId = this.SwitchDpcId;
     window.UseCombinedEdge = this.UseCombinedEdge;
@@ -620,6 +550,8 @@ export class Designer extends React.Component<DesignerProps, DesignerStates> {
           itemId: items[0],
           updateModel: { [key]: value }
         });
+        // console.log('itemId', items[0]);
+        // console.log(key, value);
       } else {
         this.graph.updateItem(item, { [key]: value });
       }

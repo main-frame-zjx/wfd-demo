@@ -8,18 +8,20 @@ long long rd()
 	return rand() | (rand() << 15);
 }
 
-int module_num = 10;
+const int module_num = 10;
+const int edge_max = 3; // 两个module之间的有向边数量最大值
 int pi_num = 0;
 string module_name[10] = {"gia", "vsd", "hsd", "gtf", "dsd", "gsd", "lsd", "pai", "gff", "gfd"};
 int module_instance_num[10] = {4, 4, 4, 4, 4, 4, 4, 4, 4, 1};
 int mi_start[10] = {0};
 
-string code_path = "./generate_code/case5/";
-string dump_path = "./generate_dump/case5_20M/";
-int cycle_max = 1000; // 对应20M
+string code_path = "./generate_code/case1/";
+string dump_path = "./generate_dump/case1_10M/";
+int cycle_max = 3000; // 对应10M
 // int cycle_max = 350000; // 对应1GB
 
-int port_num[10][10];
+int port_num[module_num][module_num];
+int dump_data_line_num[module_num][module_num][edge_max][4];
 
 int init_port_num_array()
 {
@@ -56,7 +58,7 @@ int init_port_num_array()
 		_for(j, 0, module_num)
 		{
 			if (port_num[i][j] > 0)
-				port_num[i][j] = rand() % 3 + 1;
+				port_num[i][j] = rand() % edge_max + 1;
 			total_pi_num += port_num[i][j] * 4;
 		}
 	}
@@ -247,6 +249,7 @@ void printDumpFile()
 					cout << "class xgfss_" << module_name[i] << "_" << module_name[j] << endl;
 					cout << "endclass" << endl;
 
+					int data_line_num = 0;
 					int data_seed_max = 50;
 					if (rand() % 50 == 0)
 						data_seed_max = 1;
@@ -262,6 +265,7 @@ void printDumpFile()
 							// 拥挤数据传输
 							_for(c_id, current_cycle, current_cycle + width)
 								print_dump_record(c_id);
+							data_line_num += width;
 						}
 						else if (data_seed < 20)
 						{
@@ -269,7 +273,10 @@ void printDumpFile()
 							_for(c_id, current_cycle, current_cycle + width)
 							{
 								if (rand() % 2 == 0)
+								{
 									print_dump_record(c_id);
+									data_line_num += 1;
+								}
 							}
 						}
 						else
@@ -278,12 +285,39 @@ void printDumpFile()
 						}
 						current_cycle += width;
 					}
-
+					dump_data_line_num[i][j][k][dpc] = data_line_num;
 					fclose(stdout);
 				}
 			}
 		}
 	}
+}
+
+void printDumpFileTxt()
+{
+	freopen((dump_path + (string) "test_dump.txt").data(), "w", stdout);
+	cout << pi_num << endl;
+	int pi_idx = 0;
+	_for(i, 0, module_num)
+	{
+		_for(j, 0, module_num)
+		{
+			if (port_num[i][j] == 0)
+				continue;
+			_for(k, 0, port_num[i][j])
+			{
+				int stepi = module_instance_num[i] == 1 ? 0 : 1;
+				int stepj = module_instance_num[j] == 1 ? 0 : 1;
+				cout << dump_file_name(i, j, 0, k) << " " << dump_data_line_num[i][j][k][0] << endl;
+				cout << dump_file_name(i, j, 1, k) << " " << dump_data_line_num[i][j][k][1] << endl;
+				cout << dump_file_name(i, j, 2, k) << " " << dump_data_line_num[i][j][k][2] << endl;
+				cout << dump_file_name(i, j, 3, k) << " " << dump_data_line_num[i][j][k][3] << endl;
+				pi_idx += 4;
+			}
+		}
+	}
+
+	fclose(stdout);
 }
 
 int main()
@@ -292,4 +326,5 @@ int main()
 	printTestCodeTxt();
 	printTestCodeCpp();
 	printDumpFile();
+	printDumpFileTxt();
 }

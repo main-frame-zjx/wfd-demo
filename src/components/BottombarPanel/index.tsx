@@ -75,28 +75,6 @@ const BottombarPanel = forwardRef<any, PropsWithChildren<IBottombarPanelProps>>(
       setIsPlaying(false);
     } else {
       // 如果未播放，启动定时器并将按钮文字改为暂停
-      //   intervalRef.current = setInterval(() => {
-      //     setPercent((prevPercent) => {
-      //       if (prevPercent < 100) {
-      //         const newPercent = prevPercent + 1;
-      //         setNow((prevNow) => prevNow + Math.floor((cycle_end - cycle_start) / 100));
-      //         if (now > cycle_end) {
-      //           setNow(cycle_end);
-      //         }
-      //         console.log("newPercent:", newPercent)
-      //         console.log('now:', now);
-      //         return newPercent;
-      //       } else {
-      //         setNow(cycle_end);
-      //         clearInterval(intervalRef.current);
-      //         setIsPlaying(false);
-      //         return prevPercent;
-      //       }
-      //     });
-      //   }, 100); // 每 100 毫秒增加 1% 进度
-      //   setIsPlaying(true);
-      // }
-
 
       const intervalTime = intervalTimeRef.current; // 确保最小间隔50ms
       const stepPerTick = props.stepSize;
@@ -175,7 +153,7 @@ const BottombarPanel = forwardRef<any, PropsWithChildren<IBottombarPanelProps>>(
   }, [props.fpsmax]);
 
 
-  // 新增 useEffect 监听 now 变化
+  // 监听 now 变化
   useEffect(() => {
     if (typeof window.RefreshGraph === 'function') {
       window.RefreshGraph(now); // 调用父组件方法

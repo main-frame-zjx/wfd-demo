@@ -2,7 +2,6 @@ import styles from "./index.less";
 import { Input, Button, Checkbox } from "antd";
 import React, { useContext, useState } from "react";
 import LangContext from "../../util/context";
-import DataTableModal from "./DataTableModal";
 import { IProcessModel } from '../../types';
 import i18n from "../../util/zhcn";
 

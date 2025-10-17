@@ -104,8 +104,35 @@ function readFileAsTextPromise(file) {
     });
 }
 
+//parse "gia_vsd_draw_id0[0]" to "gia_vsd_draw_id0_0"
+function parsePortName(name) {
+    // use regex to parse
+    const match = name.match(/^(.+?)\[(\d+)\]$/);
+    if (match) {
+        return `${match[1]}_${match[2]}`;
+    } else {
+        // not match, return default value
+        return `${name}_${0}`;
+    }
+}
+
+
 function code_analyse_test_case1(codeInfo, referCodeInfo) {
-    return true;
+    // console.log('codeInfo', codeInfo);
+    // console.log('referCodeInfo', referCodeInfo);
+    let pass = true;
+    if (codeInfo.moduleNum != referCodeInfo.moduleNum) pass = false;
+    if (codeInfo.moduleInstanceNum != referCodeInfo.moduleInstanceNum) pass = false;
+    if (codeInfo.portInstanceNum != referCodeInfo.portInstanceNum) pass = false;
+    //check port instance associate with dumpfile
+    for (let i = 0; i < codeInfo.portInstanceNum; i++) {
+        let dump_file_name = referCodeInfo.portInstanceArray[i].dump_file_name;
+        let name = referCodeInfo.portInstanceArray[i].name;
+        const searchKey = parsePortName(name);
+        let pi = codeInfo.portInstanceMap.get(searchKey);
+        if (pi.dump_file_name != dump_file_name) pass = false;
+    }
+    return pass;
 };
 
 const CodeAnalyseTool = {
@@ -126,7 +153,7 @@ const CodeAnalyseTool = {
         if (useTestData) {
             // check analyse result match with .txt file
             let referCodeInfo = new CodeInfo();
-            this.analyseCodeFilesToRefer(files, referCodeInfo);
+            await this.analyseCodeFilesToRefer(files, referCodeInfo);
             let pass = code_analyse_test_case1(codeInfo, referCodeInfo);
             if (pass) {
                 message.info("代码解析器测试通过！\ncode_analyse_test_case1");
@@ -188,7 +215,8 @@ const CodeAnalyseTool = {
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 const fileName = file.name;
-                if (fileName.endsWith('txt')) {
+                if (fileName.endsWith('.txt')) {
+                    console.log('analyse: ', fileName);
                     const filePromise = readFileAsTextPromise(file)
                         .then((fileContent) => {
                             const lines = fileContent.split(/\r?\n/);
@@ -334,17 +362,17 @@ const CodeAnalyseTool = {
             const { drawModuleInstanceArray, drawPortInstanceArray, nodesId2Index } = this.selectModuleInstanceAndPortToDraw(dpc_id);
             console.log(`drawModuleInstanceArray.length = ${drawModuleInstanceArray.length}`);
             console.log(`drawPortInstanceArray.length = ${drawPortInstanceArray.length}`);
-            // 这里分配给每个node的位置
+            // init node array
             for (let i = 0; i < drawModuleInstanceArray.length; i++) {
                 let mi = drawModuleInstanceArray[i];
                 let mi_name = codeInfo.moduleArray[mi.mptr_id].module_type === "Single" ? mi.module_name : mi.module_name + '[' + mi.index.toString() + ']';
                 let node = {
                     id: mi.mi_id.toString(),
-                    x: 100 + 50 * i,
-                    y: 100 + 50 * i,
+                    x: 10 + 10 * i, //only use for init, no meaning
+                    y: 10 + 10 * i,
                     label: mi_name,
+                    //clazz: 'module',
                     clazz: 'scriptTask',
-                    //active: true
                 };
                 nodes.push(node);
             }
@@ -357,12 +385,12 @@ const CodeAnalyseTool = {
                     sourceAnchor: 0,
                     targetAnchor: 1,
                     clazz: 'flow',
+                    //clazz: 'port',
                     MxLabel: pi.name,
                     MxFileName: pi.dump_file_name,
                     //shape: 'arc',
                     // shape: 'cubic-vertical',
                     color: 'rgb(194, 207, 209)',
-                    // label: pi.dump_file_name,
                     curvePosition: 0.5,
                     curveOffset: 30,
                     currentRate: 0,
@@ -387,6 +415,24 @@ const CodeAnalyseTool = {
         console.log('renderInfo', renderInfo);
 
         return { nodes: nodes, edges: edges };
+    },
+
+    reGenerateGraph(nodes, edges) {
+        console.log('this.graph.nodes', nodes);
+        console.log('renderInfo.data.nodes', renderInfo.data.nodes);
+        let ret_nodes = renderInfo.data.nodes;
+        let ret_edges = renderInfo.data.edges;
+        let nodesId2Index = renderInfo.nodesId2Index;
+        for (let i = 0; i < nodes.length; i++) {
+            let node = nodes[i];
+            const model = node.getModel();
+            ret_nodes[nodesId2Index[model.id]].x = model.x;
+            ret_nodes[nodesId2Index[model.id]].y = model.y;
+        }
+
+        this.setAnchor(ret_nodes, ret_edges, nodesId2Index);
+
+        return { nodes: ret_nodes, edges: ret_edges };
     },
 
     getEdgeSetDrawData() {

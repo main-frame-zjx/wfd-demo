@@ -213,7 +213,7 @@ function getPortInstanceInLastPart(param, portInstanceMap) {
 
 
     const lastParam = params[params.length - 1];
-    console.log(param, 'last part', lastParam);
+    //console.log(param, 'last part', lastParam);
     const multiPortRegex = /(\w+)\[(\d+)\]/;
     const match = multiPortRegex.exec(lastParam);
 
@@ -223,7 +223,7 @@ function getPortInstanceInLastPart(param, portInstanceMap) {
         const searchKey = `${portName}_${index}`;
 
         if (!portInstanceMap.has(searchKey)) {
-            console.log(`not find define of : ${portName}[${index}]`);
+            console.log(`in function getPortInstanceInLastPart(), not find define of : ${portName}[${index}]`);
             return null;
         } else {
             return portInstanceMap.get(searchKey);
@@ -234,7 +234,7 @@ function getPortInstanceInLastPart(param, portInstanceMap) {
         const searchKey = `${portName}_${index}`;
 
         if (!portInstanceMap.has(searchKey)) {
-            console.log(`not find define of : ${portName}`);
+            console.log(`in function getPortInstanceInLastPart(), not find define of : ${portName}`);
             return null;
         } else {
             return portInstanceMap.get(searchKey);
@@ -412,7 +412,7 @@ const CodeProcessFunc = {
             moduleArray.push(newModule);
         }
 
-        console.log("succ multiBlock");
+        //console.log("succ multiBlock");
 
         // 正则表达式用于寻找所有形如 CBlock *block; 的代码
         const singleModuleRegex = /(C\w*?Block)\s*\*\s*(\w+)\s*;/g;
@@ -428,7 +428,7 @@ const CodeProcessFunc = {
             moduleArray.push(newModule);
         }
 
-        console.log("succ singleBlock");
+        //console.log("succ singleBlock");
     },
 
 
@@ -503,7 +503,7 @@ const CodeProcessFunc = {
             portArray.push(newPort);
         }
 
-        console.log("succ multiPort");
+        //console.log("succ multiPort");
 
         // 正则表达式用于寻找所有形如 Port *port_name; 的代码
         const singlePortRegex = /Port\s*\*\s*(\w+)\s*[;|=|\s]/g;
@@ -516,7 +516,7 @@ const CodeProcessFunc = {
             portArray.push(newPort);
         }
 
-        console.log("succ singlePort");
+        //console.log("succ singlePort");
     },
 
 
@@ -613,7 +613,7 @@ const CodeProcessFunc = {
 
             const param2 = noSpaceString(match[2]);
             const param3 = noSpaceString(match[3]);
-            console.log('find ConnectPort() Multi', param2, param3);
+            //console.log('find ConnectPort() Multi', param2, param3);
             setOneEndOfPortInstance(portInstance, moduleInstanceMap, param2);
             setOneEndOfPortInstance(portInstance, moduleInstanceMap, param3);
         }
@@ -632,11 +632,11 @@ const CodeProcessFunc = {
             }
 
             const param2 = noSpaceString(match[2]);
-            console.log('find ConnectPort() Single', param2);
+            //console.log('find ConnectPort() Single', param2);
             setOneEndOfPortInstance(portInstance, moduleInstanceMap, param2);
         }
 
-        console.log("succ Connect Recognition");
+        //console.log("succ Connect Recognition");
     },
 
 

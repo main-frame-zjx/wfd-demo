@@ -6,16 +6,49 @@ let cycleDict = {};
 let minCycle = 0;
 let maxCycle = 0;
 let dumpInfo = null;
-
+import { message } from "antd";
 const influx_time_start_ms = 1735660800000;  //start from 2025-01-01
 
 class DumpInfo {
   constructor() {
-    this.minCycle = 0;
-    this.maxCycle = 0;
-    this.portInstanceNum = 0;
+    this.minCycle = -1;
+    this.maxCycle = -1;
+    this.dumpFileNum = 0;
+    this.dumpFileNameArray = [];
+    this.dumpFileDataLineNum = new Map();
   }
 }
+
+function readFileAsTextPromise(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (e.target && typeof e.target.result === 'string') {
+        resolve(e.target.result);
+      } else {
+        reject(new Error('Failed to read file as text.'));
+      }
+    };
+    reader.onerror = (e) => {
+      reject(e.target.error || new Error('Unknown error occurred.'));
+    };
+    reader.readAsText(file);
+  });
+}
+
+function dump_analyse_test_case1(dumpInfo, referDumpInfo) {
+  console.log('dumpInfo', dumpInfo);
+  console.log('referDumpInfo', referDumpInfo);
+  let pass = true;
+  //if (dumpInfo.minCycle != referDumpInfo.minCycle) pass = false;
+  //if (dumpInfo.maxCycle != referDumpInfo.maxCycle) pass = false;
+  if (dumpInfo.dumpFileNum != referDumpInfo.dumpFileNum) pass = false;
+  for (let i = 0; i < dumpInfo.dumpFileNum; i++) {
+    let dump_file_name = dumpInfo.dumpFileNameArray[i];
+    if (dumpInfo.dumpFileDataLineNum.get(dump_file_name) != referDumpInfo.dumpFileDataLineNum.get(dump_file_name)) pass = false;
+  }
+  return pass;
+};
 
 
 function readFileAsText(file) {
@@ -104,6 +137,13 @@ const DumpAnalyseTool = {
       if (fileName.endsWith('model_vec')) {
         const filePromise = readFileAsText(file)
           .then(async (fileContent) => {
+            //update dumpInfo
+            dumpInfo.dumpFileNum += 1;
+            dumpInfo.dumpFileNameArray.push(fileName);
+            let minCyc = -1;
+            let maxCyc = -1;
+            let dataLenNum = 0;
+            //parse content
             const lines = fileContent.split(/\r?\n/);
             let flag = 0; // flag means after 'endclass' 
             let num = 0;
@@ -114,6 +154,20 @@ const DumpAnalyseTool = {
               if (flag === 1 && line.trim() !== '') {
                 const listLine = line.split(/\s+/);
                 const cycle_id_idx = listLine.length - 1;
+                const cyc_id = parseInt(listLine[cycle_id_idx], 10);
+                //update dumpInfo
+                dataLenNum += 1;
+                if (minCyc == -1) {
+                  minCyc = cyc_id;
+                  maxCyc = cyc_id;
+                }
+                else {
+                  minCyc = Math.min(minCyc, cyc_id);
+                  maxCyc = Math.max(maxCyc, cyc_id);
+                }
+
+                //parse
+
                 let data_valid = '1';
                 if (data_valid_pos >= 0 && data_valid_pos < cycle_id_idx)
                   data_valid = listLine[data_valid_pos];
@@ -132,6 +186,16 @@ const DumpAnalyseTool = {
                 num += 1;
               }
             }
+            //update dumpInfo
+            dumpInfo.dumpFileDataLineNum.set(fileName, dataLenNum);
+            if (dumpInfo.minCycle == -1) {
+              dumpInfo.minCycle = minCyc;
+              dumpInfo.maxCycle = maxCyc;
+            } else {
+              dumpInfo.minCycle = Math.min(dumpInfo.minCycle, minCyc);
+              dumpInfo.maxCycle = Math.max(dumpInfo.maxCycle, maxCyc);
+            }
+            //send to influxDB
             this.sendLine2Influx(username, upload_id, fileName, writeClient, resultArray);
             await writeClient.flush();
           })
@@ -168,6 +232,76 @@ const DumpAnalyseTool = {
     // send left data to InfluxDB
     if (points.length > 0) {
       writeClient.writePoints(points);
+    }
+  },
+
+  resetDumpInfo() {
+    dumpInfo = new DumpInfo();
+  },
+
+  async run_test_case(files, useTestData) {
+    if (useTestData) {
+
+      let referDumpInfo = new DumpInfo();
+      await this.analyseDumpFilesToRefer(files, referDumpInfo);
+      let pass = dump_analyse_test_case1(dumpInfo, referDumpInfo);
+      if (pass) {
+        message.info("数据解析器测试通过！\ndump_analyse_test_case1");
+      } else {
+        message.error("数据解析器测试未通过！\ndump_analyse_test_case1");
+      }
+
+
+    }
+  },
+
+  async analyseDumpFilesToRefer(files, referDumpInfo) {
+    if (files) {
+
+      // 用于存储所有文件的读取和处理 Promise
+      const fileProcessingPromises = [];
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fileName = file.name;
+        if (fileName.endsWith('.txt')) {
+          console.log('analyse: ', fileName);
+          const filePromise = readFileAsTextPromise(file)
+            .then((fileContent) => {
+              const lines = fileContent.split(/\r?\n/);
+              let curLine = 0;
+              let dumpFileNum = parseInt(lines[curLine]);
+              if (dumpFileNum) {
+                referDumpInfo.dumpFileNum = dumpFileNum;
+                curLine++;
+              }
+              else {
+                alert(fileName + ', this file are not required!');
+                return;
+              }
+
+              for (let i = 0; i < referDumpInfo.dumpFileNum; i++) {
+                const lineContent = lines[curLine];
+                const params = lineContent.split(/\s+/);
+                if (params.length !== 2) {
+                  alert(fileName + ", line " + curLine.toString() + ", param num error!");
+                  return;
+                }
+                referDumpInfo.dumpFileNameArray.push(params[0]);
+                referDumpInfo.dumpFileDataLineNum.set(params[0], parseInt(params[1]));
+                curLine++;
+              }
+
+            })
+            .catch((error) => {
+              console.error('Error reading file:', error);
+            });
+          fileProcessingPromises.push(filePromise);
+        }
+      }
+      // 等待所有文件处理完成
+      await Promise.all(fileProcessingPromises);
+
     }
   },
 

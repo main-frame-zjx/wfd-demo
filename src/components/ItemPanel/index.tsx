@@ -443,6 +443,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                     const username = localStorage.getItem('username');
 
                     try {
+                         DumpAnalyseTool.resetDumpInfo();
                          for (let i = 0; i < files.length; i++) {
                               const file = files[i];
                               await DumpAnalyseTool.analyseAndUploadBigDumpFile(username, upload_id, writeClient, file);
@@ -450,7 +451,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                               const progress = Math.round(((i + 1) / files.length) * 100);
                               setUploadProgress(progress);
                          }
-
+                         await DumpAnalyseTool.run_test_case(files, window.GetUseTestData());
                          alert("数据文件上传解析成功！");
                     } catch (error) {
                          console.error("上传过程中出错:", error);
@@ -476,6 +477,20 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
           }
 
      };
+
+     const handleReGeneratePortEdge = () => {
+          // 调用生成结构图的逻辑
+          if (CodeAnalyseTool.getSuccInitCodeInfo()) {
+               if (window.ReGenerateGraphEdge) {
+                    window.ReGenerateGraphEdge();
+               }
+          } else {
+               alert('Please upload code!');
+          }
+
+     };
+
+     
 
 
 
@@ -1152,8 +1167,7 @@ const ItemPanel = forwardRef<any, ItemPanelProps>(({ height }, ref) => {
                                         width: '90%'
                                    }}
                                    onClick={() => {
-                                        // setUploadBigDataModalVisible(true);
-                                        // fetchBigDataList();
+                                        handleReGeneratePortEdge()
                                    }}
                               >
                                    重新生成port边
